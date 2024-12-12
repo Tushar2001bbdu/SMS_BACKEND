@@ -1,0 +1,5 @@
+.env
+node_modules
+student-account-key.json
+teacher-account-key.json
+.serverless
