@@ -1,0 +1,43 @@
+name: Deploy to AWS Lambda
+
+on:
+  push:
+    branches:
+      - main  # Deploy on push to the main branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Checkout the code
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # Step 2: Set up Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      # Step 3: Install dependencies
+      - name: Install dependencies
+        run: npm install
+
+      # Step 4: Package the app
+      - name: Package for deployment
+        run: |
+          zip -r lambda.zip .  # Create a deployment package
+          aws s3 cp lambda.zip s3://your-artifacts-bucket-name/lambda.zip
+
+      # Step 5: Deploy to AWS Lambda
+      - name: Deploy to AWS Lambda
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: us-east-1  # Adjust the region as needed
+        run: |
+          aws lambda update-function-code \
+            --function-name server.handler \
+            --s3-bucket your-artifacts-bucket-name \
+            --s3-key lambda.zip
