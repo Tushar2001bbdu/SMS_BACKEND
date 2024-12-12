@@ -1,5 +1,5 @@
 const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
-require("dotenv").config();
+
 
 const dynamoDBClient = new DynamoDBClient({
   region: process.env.REGION,

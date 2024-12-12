@@ -6,8 +6,7 @@ const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
 
 const { body, validationResult } = require("express-validator");
-// Load environment variables from .env file
-require("dotenv").config();
+
 
 const Teachers = require("../models/teachers");
 
