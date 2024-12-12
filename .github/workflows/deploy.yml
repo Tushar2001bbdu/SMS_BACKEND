@@ -24,13 +24,25 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Package the app
+      # Step 4: Create the Student Firebase service account key file
+      - name: Create Firebase key file
+        env:
+          FIREBASE_KEY: ${{ secrets.STUDENT_ACCOUNT_KEY }}
+        run: |
+          echo "$FIREBASE_KEY" > student-account-key.json
+      # Step 5: Create the Teacher Firebase service account key file
+      - name: Create Firebase key file
+        env:
+          FIREBASE_KEY: ${{ secrets.TEACHER_ACCOUNT_KEY }}
+        run: |
+          echo "$FIREBASE_KEY" > teacher-account-key.json
+      # Step 5: Package the app
       - name: Package for deployment
         run: |
           zip -r lambda.zip .  # Create a deployment package
           aws s3 cp lambda.zip s3://your-artifacts-bucket-name/lambda.zip
 
-      # Step 5: Deploy to AWS Lambda
+      # Step 6: Deploy to AWS Lambda
       - name: Deploy to AWS Lambda
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
