@@ -1,0 +1,49 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "description": "my exam management app",
+  "main": "index.js",
+  "scripts": {
+    "start": "nodemon server.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Tushar Kumar Gupta",
+  "license": "ISC",
+  "dependencies": {
+    "@apollo/server": "^4.11.2",
+    "@aws-sdk/client-dynamodb": "^3.658.1",
+    "@aws-sdk/client-rekognition": "^3.658.1",
+    "@aws-sdk/client-s3": "^3.658.1",
+    "@aws-sdk/lib-storage": "^3.658.1",
+    "aws-sdk": "^2.1691.0",
+    "aws-serverless-express": "^3.4.0",
+    "axios": "^1.7.7",
+    "cors": "^2.8.5",
+    "crypto": "^1.0.1",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "express-session": "^1.18.0",
+    "firebase": "^10.12.3",
+    "firebase-admin": "^12.2.0",
+    "firebase-app": "^0.0.1",
+    "firebase-auth": "^0.1.2",
+    "graphql": "^16.9.0",
+    "helmet": "^7.1.0",
+    "http": "^0.0.1-security",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.3.4",
+    "nodemon": "^3.1.4",
+    "peer": "^1.0.2",
+    "server.js": "^1.0.0",
+    "serverless": "^4.4.15",
+    "serverless-deployment-bucket": "^1.6.0",
+    "sharp": "^0.33.5",
+    "socket.io": "^4.8.0"
+  },
+  "devDependencies": {
+    "serverless-offline": "^14.4.0",
+    "serverless-webpack": "^5.15.0",
+    "webpack": "^5.97.1",
+    "webpack-node-externals": "^3.0.0"
+  }
+}

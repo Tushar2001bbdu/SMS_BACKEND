@@ -1,0 +1,34 @@
+service: school-management-service
+
+provider:
+  name: aws
+  runtime: nodejs18.x
+  region: ap-south-1
+  stage: dev
+  memorySize: 128
+  timeout: 30
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        - dynamodb:*
+        - s3:*
+        - rekognition:*
+        - logs:*
+      Resource: "*"
+
+functions:
+  app:
+    handler: server.handler
+    events:
+      - http: ANY /
+      - http: 'ANY {proxy+}'
+
+plugins:
+  - serverless-offline
+  - serverless-deployment-bucket
+custom:
+    esbuild:
+       bundle: true
+       minify: true
+       sourcemap: true
+       exclude: ['aws-sdk'] # Exclude default AWS SDK
