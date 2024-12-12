@@ -47,7 +47,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{secrets :REGION}} # Adjust the region as needed
+          AWS_DEFAULT_REGION: ${{secrets.REGION}} # Adjust the region as needed
         run: |
           aws lambda update-function-code \
             --function-name server.handler \
