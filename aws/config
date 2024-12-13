@@ -1,0 +1,3 @@
+[default]
+region= process.env.REGION
+output=json
