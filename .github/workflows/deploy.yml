@@ -48,6 +48,6 @@ jobs:
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
-            --function-name server.handler \
+            --function-name DeployingFunction \
             --s3-bucket your-artifacts-bucket-name \
             --s3-key lambda.zip
