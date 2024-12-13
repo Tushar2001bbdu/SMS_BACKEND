@@ -24,30 +24,42 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Create the Firebase service account key files for Student and Teacher
-      - name: Create Firebase key files
+      # Step 4: Build Docker image for Lambda
+      - name: Build Docker image
         run: |
-          echo "${{ secrets.STUDENT_ACCOUNT_KEY }}" > student-account-key.json
-          echo "${{ secrets.TEACHER_ACCOUNT_KEY }}" > teacher-account-key.json
+          docker build -t my-lambda-image .
 
-      # Step 5: Set up AWS CLI with secrets
+      # Step 5: Set up AWS CLI with credentials
       - name: Set up AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.REGION }} # Adjust the region as needed
-    
+          aws-region: ${{ secrets.REGION }}
 
-      # Step 6: Package the app for Lambda deployment
-      - name: Package the app for Lambda
+      # Step 6: Authenticate Docker to AWS ECR
+      - name: Log in to Amazon ECR
         run: |
-          zip -r lambda.zip .  # Create a deployment package
-          aws s3 cp lambda.zip s3://your-artifacts-bucket-name/lambda.zip
-     # Step 7: Deploy to AWS Lambda
-      - name: Deploy to AWS Lambda
+          aws ecr get-login-password --region ${{ secrets.REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com
+
+      # Step 7: Create ECR repository if it does not exist
+      - name: Create ECR repository (if not exists)
         run: |
-          aws lambda update-function-code \
-            --function-name DeployingFunction \
-            --s3-bucket your-artifacts-bucket-name \
-            --s3-key lambda.zip
+          aws ecr describe-repositories --repository-names my-lambda-repo || aws ecr create-repository --repository-name my-lambda-repo --region ${{ secrets.REGION }}
+
+      # Step 8: Tag Docker image
+      - name: Tag Docker image for ECR
+        run: |
+          docker tag my-lambda-image:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repo:latest
+
+      # Step 9: Push Docker image to ECR
+      - name: Push Docker image to ECR
+        run: |
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repo:latest
+
+      # Step 10: Create or update Lambda function with Docker image
+      - name: Deploy Lambda function
+        run: |
+          aws lambda update-function-code --function-name deployment-function \
+            --image-uri ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repo:latest \
+            --region ${{ secrets.REGION }}
