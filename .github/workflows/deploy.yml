@@ -24,30 +24,28 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      # Step 4: Create the Student Firebase service account key file
-      - name: Create Firebase key file
-        env:
-          FIREBASE_KEY: ${{ secrets.STUDENT_ACCOUNT_KEY }}
+      # Step 4: Create the Firebase service account key files for Student and Teacher
+      - name: Create Firebase key files
         run: |
-          echo "$FIREBASE_KEY" > student-account-key.json
-      # Step 5: Create the Teacher Firebase service account key file
-      - name: Create Firebase key file
-        env:
-          FIREBASE_KEY: ${{ secrets.TEACHER_ACCOUNT_KEY }}
-        run: |
-          echo "$FIREBASE_KEY" > teacher-account-key.json
-      # Step 5: Package the app
-      - name: Package for deployment
+          echo "${{ secrets.STUDENT_ACCOUNT_KEY }}" > student-account-key.json
+          echo "${{ secrets.TEACHER_ACCOUNT_KEY }}" > teacher-account-key.json
+
+      # Step 5: Package the app for Lambda deployment
+      - name: Package the app for Lambda
         run: |
           zip -r lambda.zip .  # Create a deployment package
           aws s3 cp lambda.zip s3://your-artifacts-bucket-name/lambda.zip
 
-      # Step 6: Deploy to AWS Lambda
+      # Step 6: Set up AWS CLI with secrets
+      - name: Set up AWS credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
+          aws-region: ${{ secrets.REGION }} # Adjust the region as needed
+
+      # Step 7: Deploy to AWS Lambda
       - name: Deploy to AWS Lambda
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.SECRET_ACCESS_KEY }}
-          AWS_DEFAULT_REGION: ${{ secrets.REGION }} # Adjust the region as needed
         run: |
           aws lambda update-function-code \
             --function-name server.handler \
