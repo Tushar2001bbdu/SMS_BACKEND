@@ -30,21 +30,21 @@ jobs:
           echo "${{ secrets.STUDENT_ACCOUNT_KEY }}" > student-account-key.json
           echo "${{ secrets.TEACHER_ACCOUNT_KEY }}" > teacher-account-key.json
 
-      # Step 5: Package the app for Lambda deployment
-      - name: Package the app for Lambda
-        run: |
-          zip -r lambda.zip .  # Create a deployment package
-          aws s3 cp lambda.zip s3://your-artifacts-bucket-name/lambda.zip
-
-      # Step 6: Set up AWS CLI with secrets
+      # Step 5: Set up AWS CLI with secrets
       - name: Set up AWS credentials
         uses: aws-actions/configure-aws-credentials@v3
         with:
           aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.REGION }} # Adjust the region as needed
+    
 
-      # Step 7: Deploy to AWS Lambda
+      # Step 6: Package the app for Lambda deployment
+      - name: Package the app for Lambda
+        run: |
+          zip -r lambda.zip .  # Create a deployment package
+          aws s3 cp lambda.zip s3://your-artifacts-bucket-name/lambda.zip
+     # Step 7: Deploy to AWS Lambda
       - name: Deploy to AWS Lambda
         run: |
           aws lambda update-function-code \
