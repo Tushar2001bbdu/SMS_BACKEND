@@ -50,6 +50,10 @@ const TeachersSchema = new Schema({
             default: Date.now,
         },
     },
+    allotedSections:{
+        type:[String],
+        required:true
+    },
     studentslist: {
         type: [Number],
         ref: "students",

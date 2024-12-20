@@ -1,4 +1,5 @@
 let teacherService = require("../services/teachers");
+const { teacherCheck } = require("../utils/aurhentication");
 let rollno;
 exports.seeProfile = async (req, res) => {
   try {
@@ -15,13 +16,18 @@ exports.seeProfile = async (req, res) => {
   }
 };
 exports.login = async (req, res) => {
-  rollno = req.query.rollno;
-  console.log("The roll number is " +rollno)
+  rollno = req.body.userDetails.rollNo;
+  console.log("The roll number is " + rollno)
   try {
+  if(await teacherCheck(req.body.userDetails.email,rollno)){
+
     res.json({
       status: 200,
       message: "You have logged in successfully",
-    });
+    });}
+    else{
+      res.json({status:401,message:"Invalid Credentials"})
+    }
   } catch (error) {
     res.json({ status: 500, message: error });
   }
@@ -32,7 +38,7 @@ exports.getStudentProfile = async (req, res) => {
       res.json({ status: 400, message: "no roll number has been entered" });
     } else {
       const response = await teacherService.getStudentProfile(rollno);
-      if (response===null) {
+      if (response === null) {
         res.json({ status: 401, message: "invalid rollno has been entered" });
       } else {
         res.json({ status: 200, profile: response });
@@ -43,7 +49,7 @@ exports.getStudentProfile = async (req, res) => {
   }
 };
 exports.updateStudentResult = async (req, res) => {
-  const { marks } = req.body;
+  const { rollno, marks } = req.body;
   try {
     if (!marks || !rollno) {
       res.json({
@@ -52,6 +58,7 @@ exports.updateStudentResult = async (req, res) => {
       });
     } else {
       await teacherService.updateStudentResult(marks, rollno);
+
       res.json({
         status: 200,
         message: "the result of student has been updated successfully",

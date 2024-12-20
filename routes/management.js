@@ -17,6 +17,7 @@ const admin = require("firebase-admin");
 
 const users = require("../models/students");
 const teachers = require("../models/teachers");
+const Class = require("../models/classes");
 const appstudents = admin.app("students");
 const appteachers= admin.app("teachers");
 
@@ -42,6 +43,7 @@ Router.post(
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
+      console.log(errors)
       res.status(500).send({ success: "You have entered inavlid credentials" });
     } else {
       try {
@@ -67,6 +69,13 @@ Router.post(
             teacherrollno:req.body.teacherrollno
 
           });
+          await Results.create({
+            rollno: req.body.rollno,
+            name: req.body.name,
+          });
+          await Details.create(
+            { rollno: req.body.rollno , name:req.body.name}
+          );
           // adding student to teacher list of students
           let teacher=await Teachers.findOne({ rollno:req.body.teacherrollno}).select('studentslist')
           teacher.studentslist.push(req.body.rollno)
@@ -158,6 +167,101 @@ Router.post(
   }
 );
 
+//Route to create class for a teacher in the Student Management System
+Router.post(
+  '/createClass',
+  [
+    body('name', 'Class name should be at least 3 characters long').isLength({ min: 3 }),
+    body('code', 'Class code must be provided').notEmpty(),
+    body('teachers', 'A valid teacher ID must be provided').notEmpty(),
+    body('room', 'Room name or "Online" must be specified').notEmpty(),
+    body('schedule.day', 'Day must be a valid weekday').isIn([
+      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    ]),
+    body('schedule.time.start', 'Start time must be in HH:mm format').matches(/^([01]\d|2[0-3]):([0-5]\d)$/),
+    body('schedule.time.end', 'End time must be in HH:mm format').matches(/^([01]\d|2[0-3]):([0-5]\d)$/),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        status: 400,
+        message: 'Invalid data provided for class creation',
+        errors: errors.array(),
+      });
+    }
+
+    try {
+      const { name, code, teachers, room, schedule } = req.body;
+      const existingClass = await Class.findOne({ code });
+      if (existingClass) {
+        return res.status(409).json({
+          status: 409,
+          message: 'Class with this code already exists',
+        });
+      }
+      const newClass = await Class.create({
+        name,
+        code,
+        teachers,
+        room,
+        schedule,
+      });
+
+      res.json({
+        status: 200,
+        message: 'Class created successfully',
+        data: newClass,
+      });
+    } catch (error) {
+      console.error(error);
+      res.json({
+        status:500,
+        message: 'An error occurred while creating the class',
+      });
+    }
+  }
+);
+Router.patch(
+  "/addTeacherToClass",
+  [
+    body('classCode', 'Class name should be at least 3 characters long').isLength({ min: 3 }),
+    body('teacherrollno', 'A valid teacher ID must be provided').notEmpty()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        status: 400,
+        message: 'Invalid data provided for class creation',
+        errors: errors.array(),
+      });
+    }
+    try{
+      const { classCode, teacherrollno } = req.body;
+      let updatedClass=await Class.findOneAndUpdate(
+        { name: classCode}, 
+        { $addToSet: { teachers: teacherrollno } }
+      );
+      
+      res.json({
+        status: 200,
+        message: 'Student has been added to class successfully',
+        updatedClass:updatedClass
+      });
+      
+    }
+    catch (error) {
+      console.error(error);
+      res.json({
+        status:500,
+        message: 'An error occurred while creating the class',
+      });
+    }
+  }
+)
+
 Router.post("/addResult", [
   body("rollno", "Enter a valid roll no").isLength({ min: 3 })],async (req, res) => {
   try {
@@ -166,7 +270,7 @@ if(user!==null){
   res.status(401).send("You have already added Result")
 }
 else{
-  let result = await Results.create({
+  await Results.create({
     rollno: req.body.rollno,
     name: req.body.name,
   });
@@ -181,6 +285,44 @@ else{
     res.status(401).json("You have entered invalid data");
   }
 });
+Router.patch(
+  "/addStudentToClass",
+  [
+    body('classCode', 'Class name should be at least 3 characters long').isLength({ min: 3 }),
+    body('studentrollno', 'A valid student ID must be provided').notEmpty()
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({
+        status: 400,
+        message: 'Invalid data provided for student adding',
+        errors: errors.array(),
+      });
+    }
+    try{
+      const { classCode, studentrollno } = req.body;
+      let updatedClass=await Class.findOneAndUpdate(
+        { name: classCode}, 
+        { $addToSet: { students: studentrollno } }
+      );
+      
+      res.json({
+        status: 200,
+        message: 'Student has been added to class successfully',
+        updatedClass:updatedClass
+      });
+      
+    }
+    catch (error) {
+      console.error(error);
+      res.json({
+        status:500,
+        message: 'An error occurred while creating the class',
+      });
+    }
+  }
+)
 Router.post("/addDetails",
   [
     body("rollno", "Enter a valid roll no").isLength({ min: 3 })] ,async (req, res) => {

@@ -6,6 +6,7 @@ const feesdetails = require("../models/feespaymentdetails");
 class StudentService {
   static async seeDetails(rollno) {
     try {
+      
       let profile = await students.findOne({ rollno: rollno });
       return profile;
     } catch (error) {
@@ -22,7 +23,7 @@ class StudentService {
   }
 
   static async getStudentFeesDetails(rollno) {    try {
-      let fees = await feesdetails.findOne({ "rollno": 1210437010 });
+      let fees = await feesdetails.findOne({ "rollno": rollno});
       console.log(fees)
       return fees;
     } catch (error) {

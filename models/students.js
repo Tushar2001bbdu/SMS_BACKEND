@@ -41,7 +41,7 @@ const StudentsSchema = new Schema({
         required: true
     },
     teacherrollno: {
-        type: Number,
+        type: String,
         required: true
     },
     role: {

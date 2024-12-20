@@ -7,6 +7,12 @@ const schema = new Schema({
     required: true,
     unique:false
   },
+  section:{
+    type: String,
+    required: true,
+    enum: ['A', 'B', 'C', 'D', 'E'],
+    default: 'A'
+  },
 
   title: {
     type: String,
@@ -30,7 +36,8 @@ const schema = new Schema({
     validate: {
       validator: v => /^https:\/\/[^\s]+$/.test(v),
       message: 'Invalid URL'
-    }
+    },
+    default:"#"
   },
   assignmentDate: {
     type: Date,

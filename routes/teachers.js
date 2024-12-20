@@ -42,7 +42,6 @@ Router.get(
 // Route to allow teacher to update marks of his/her students using his university roll no
 Router.patch(
   "/updateResult",
-  authenticateTeacherToken,
   teacherController.updateStudentResult
 );
 
