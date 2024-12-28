@@ -9,9 +9,7 @@ const schema = new Schema({
   },
   section:{
     type: String,
-    required: true,
-    enum: ['A', 'B', 'C', 'D', 'E'],
-    default: 'A'
+    required: true
   },
 
   title: {
@@ -37,7 +35,7 @@ const schema = new Schema({
       validator: v => /^https:\/\/[^\s]+$/.test(v),
       message: 'Invalid URL'
     },
-    default:"#"
+    default:"https://www.google.co.in/"
   },
   assignmentDate: {
     type: Date,

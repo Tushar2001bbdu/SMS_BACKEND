@@ -26,6 +26,7 @@ exports.login = async (req, res) => {
       message: "You have logged in successfully",
     });}
     else{
+      console.log(error)
       res.json({status:401,message:"Invalid Credentials"})
     }
   } catch (error) {

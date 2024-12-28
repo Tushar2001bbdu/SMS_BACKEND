@@ -12,7 +12,7 @@ class attendance {
   static async updateAttendance(url,rollno) {
     const base64Data = url.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
-    const key = `webcams/${Date.now()}.jpg`;
+    const key = `webcams/${Date.now()}/${rollno}.jpg`;
     const training_params = {
       Bucket: "schools-management-system-bucket",
       Key: key,
@@ -51,7 +51,7 @@ class attendance {
       if (!response.FaceMatches || response.FaceMatches.length === 0) {
         throw error;
       } else {
-        const matchedFaceId = response.FaceMatches[0].Face.FaceId; // Get RekognitionId (FaceId)
+        const matchedFaceId = response.FaceMatches[0].Face.FaceId;
         await this.queryDynamoDB(matchedFaceId);
         await s3Client.send(new PutObjectCommand(training_params));
       }
