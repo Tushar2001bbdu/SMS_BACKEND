@@ -43,15 +43,10 @@
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/Tushar2001bbdu/SMS_BACKEND
    ```
 
-2. Navigate to the project directory:
-   ```bash
-   cd student-management-system-backend
-   ```
-
-3. Install dependencies:
+   2. Install dependencies:
    ```bash
    npm install
    ```
@@ -75,7 +70,7 @@
    npm run start
    ```
 
-2. The backend will be available at `http://localhost:3000`.
+2. The backend will be available at `http://localhost:3001`.
 
 ### Deployment
 
@@ -94,5 +89,5 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ## Contact
 
-For any questions or support, please contact [your-email@example.com].
+For any questions or support, please contact tusharkumargupta032@gmail.com.
 
