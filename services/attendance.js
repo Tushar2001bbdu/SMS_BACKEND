@@ -7,6 +7,7 @@ const { QueryCommand } = require("@aws-sdk/client-dynamodb");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const { SearchFacesByImageCommand } = require("@aws-sdk/client-rekognition");
+let response;
 
 class attendance {
   static async updateAttendance(url,rollno) {
@@ -45,8 +46,13 @@ class attendance {
 
         FaceMatchThreshold: 95,
       });
-
-      const response = await rekognitionClient.send(faceMatches);
+       try{
+        response = await rekognitionClient.send(faceMatches);
+       }
+       catch(error){
+          console.error(error);
+       }
+      
 
       if (!response.FaceMatches || response.FaceMatches.length === 0) {
         throw error;

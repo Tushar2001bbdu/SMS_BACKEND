@@ -8,7 +8,7 @@ const generatePresignedUrl = async (bucketName, key) => {
     const command = new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
-        ContentType: "application/jpg/jpeg/png/pdf/txt",
+        ContentType: "application/txt",
     });
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     return signedUrl;
