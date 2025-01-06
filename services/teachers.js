@@ -25,7 +25,9 @@ class TeacherService {
   static async updateStudentResult(marks, rollno) {
     try {
       let grade = "F";
-
+     
+      let student=await studentresult.findOne({rollno:rollno})
+      marks=marks+student.marks;
       if (marks > 0 && marks < 40) {
         grade = "F";
       } else if (marks > 40 && marks <= 60) {
@@ -67,17 +69,7 @@ class TeacherService {
       throw error;
     }
   }
-  static async logout(accessToken) {
-    let message;
-    admin
-      .auth(appteachers)
-      .revokeIdToken(accessToken)
-      .then(message = "Token revoked successfully")
-      .catch((error) => {
-        message = error;
-      });
-    return message;
-  }
+  
 }
 
 module.exports = TeacherService;

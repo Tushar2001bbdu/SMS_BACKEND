@@ -1,14 +1,15 @@
 let teacherService = require("../services/teachers");
 const { teacherCheck } = require("../utils/aurhentication");
 let rollno;
+
 exports.seeProfile = async (req, res) => {
   try {
-    console.log("the roll number is " + rollno);
+    
     const response = await teacherService.seeDetails(rollno);
     if (!response) {
       res.json({ status: 401, message: "you are not authorized" });
     } else {
-      res.json({ status: 200, message: response });
+      res.json({ status: 200, data: response });
     }
   } catch (error) {
     console.log(error);
@@ -17,17 +18,16 @@ exports.seeProfile = async (req, res) => {
 };
 exports.login = async (req, res) => {
   rollno = req.body.userDetails.rollNo;
-  console.log("The roll number is " + rollno)
+  
   try {
   if(await teacherCheck(req.body.userDetails.email,rollno)){
 
-    res.json({
+    res.status(200).json({
       status: 200,
       message: "You have logged in successfully",
     });}
     else{
-      console.log(error)
-      res.json({status:401,message:"Invalid Credentials"})
+      res.status(401).json({status:401,message:"Invalid Credentials"})
     }
   } catch (error) {
     res.json({ status: 500, message: error });
@@ -75,14 +75,13 @@ exports.updateStudentResult = async (req, res) => {
 exports.getStudentsList = async (req, res) => {
   try {
     let section = req.query.section;
-    console.log("The section is " + section);
+    
 
     if (section === undefined) {
       res.status(400).json({ status: 400, message: "Section is required" });
     } else {
       let response = await teacherService.getStudentList(section);
-      console.log("The student list is", response);
-      res.status(200).send({ status: 200, studentList: response });
+      res.status(200).send({ status: 200, data: response });
     }
   } catch (error) {
     console.log(error);
@@ -93,8 +92,10 @@ exports.logout = async (req, res) => {
   let { accessToken } = req.body;
   try {
     let response = await teacherService.logout(accessToken);
-    res.status(200).send({ status: 200, message: response });
+    res.status(200).send({ status: 200, data: response });
   } catch (error) {
     res.status(500).json({ status: 500, message: error.message });
   }
 };
+
+exports.rollno;

@@ -78,6 +78,8 @@ app.use("/app/assignments", require("./routes/assignment"));
 // GraphQL Server
 const graphqlServer = require("./servers/graphqlserver");
 
+
+
 // PeerJS Server
 const peerPort = 3002;
 const peerServerInstance = http.createServer();
@@ -88,7 +90,6 @@ app.use('/peerjs', peerServer);
 const mainServer = http.createServer(app);
 initializeHttpServer(app);
 initializeWebSocket(mainServer);
-
 // Ports
 const port = process.env.PORT || 3001;
 

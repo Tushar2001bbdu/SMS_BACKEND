@@ -15,6 +15,17 @@ type Assignment {
 type result{
     response:String!
 }
+input Assignments {
+    classCode: ID!
+    title: String!
+    AssignmentLink:String!
+    subject: String!
+    assignmentDate: String!
+    dueDate: String!
+    marks: Int!
+    postedBy: String!
+}
+
 input LearningMaterial {
   title: String!
   description: String!
@@ -27,7 +38,7 @@ input LearningMaterial {
   uploadedBy: String!
 }
 type LearningMaterials{
-    title: String!
+  title: String!
   description: String!
   subject: String!
   section: String!
@@ -42,24 +53,14 @@ type Query {
     getAllAssignments: [Assignment!]!
     getAssignmentsByRollno(rollno: ID!): [Assignment!]!
     getAssignmentsBySection(postedBy:String !,section: String!): [Assignment!]!
-    getLearningMaterialsBySection(postedBy: String! ,section: String!): [LearningMaterials!]!
+    getLearningMaterialsBySection(uploadedBy: String! ,section: String!): [LearningMaterials!]!
 }
 
 type Mutation {
     addAssignment(input: Assignments!): result!
     submitAssignment(rollno: ID!, title: String!,solutionLink:String!): Assignment
-    addLearningMaterial(input: LearningMaterial!): LearningMaterials!
-}
-
-input Assignments {
-    classCode: ID!
-    title: String!
-    AssignmentLink:String!
-    subject: String!
-    assignmentDate: String!
-    dueDate: String!
-    marks: Int!
-    postedBy: String!
+    addLearningMaterial(input: LearningMaterial!): result!
 }
 `
+
 module.exports = typeDefs

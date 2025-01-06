@@ -1,6 +1,7 @@
 const model = require("../models/assignments");
 const Class = require("../models/classes");
 const Student = require("../models/students");
+const studyMaterial=require("../models/learningMaterial")
 const resolvers = {
     Query: {
         async getAssignmentsByRollno(_, args) {
@@ -10,7 +11,7 @@ const resolvers = {
             return res;
         },
         async getAssignmentsBySection(_, args) {
-            console.log("The section is for assignment  is" + args.section)
+            
             let res = await model.find({
                 section: args.section, postedBy: args.postedBy
             })
@@ -21,9 +22,9 @@ const resolvers = {
             return await model.find({})
         },
         async getLearningMaterialsBySection(_,args){
-            console.log("The section is for learning material  is" + args.section)
-            let res = await model.find({
-                section: args.section, postedBy: args.postedBy
+            
+            let res = await studyMaterial.find({
+                section: args.section, uploadedBy: args.uploadedBy
             })
             console.log(res)
             return res;
@@ -53,8 +54,10 @@ const resolvers = {
                 return result;
             }
             catch (error) {
-                console.log(error)
-                throw new Error("Error in adding Assignment")
+                let result = {
+                    response: error
+                }
+                return result;
             }
 
 
@@ -74,12 +77,18 @@ const resolvers = {
                 uploadedBy: input.uploadedBy,
               });
           
-              const savedMaterial = await newMaterial.save();
-              return savedMaterial;
-            } catch (error) {
-              console.error('Error adding learning material:', error);
-              throw new Error('Failed to add learning material.');
+              await newMaterial.save();
+              let result = {
+                response: "a study material has been added"
             }
+            return result;
+            } catch (error) {
+                let result = {
+                    response: error
+                }
+                return result;
+            }
+           
           },
           
         async submitAssignment(_, args) {

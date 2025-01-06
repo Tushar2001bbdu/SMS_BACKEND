@@ -1,7 +1,7 @@
 const students = require("../models/students");
-const Teachers = require("../models/teachers");
 const studentresult = require("../models/examresult");
 const feesdetails = require("../models/feespaymentdetails");
+const Class = require("../models/classes");
 
 class StudentService {
   static async seeDetails(rollno) {
@@ -15,15 +15,32 @@ class StudentService {
   }
   static async getStudentResult(rollno) {
     try {
-      let result = await studentresult.findOne({ "rollno": rollno });
-      return result;
+      let result = await studentresult.findOne({ rollno: rollno });
+      return ({
+        attendance: result.attendance.value,
+        marks: result.marks,
+        grade: result.grade,
+      })
+    } catch (error) {
+      throw error;
+    }
+  }
+  static async getClassSchedule(section) {
+    try {
+      let classDetails = await Class.findOne({ code: section });
+      console.log(classDetails)
+      return {
+        schedule:classDetails.schedule,
+        room:classDetails.room
+      };
     } catch (error) {
       throw error;
     }
   }
 
-  static async getStudentFeesDetails(rollno) {    try {
-      let fees = await feesdetails.findOne({ "rollno": rollno});
+  static async getStudentFeesDetails(rollno) {    
+    try {
+      let fees = await feesdetails.findOne({ rollno: rollno });
       console.log(fees)
       return fees;
     } catch (error) {

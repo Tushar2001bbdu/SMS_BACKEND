@@ -24,24 +24,27 @@ const learningMaterialSchema = new mongoose.Schema({
         required: true,
         validate: {
             validator: function (v) {
-                return /^(http|https):\/\/[^ "]+$/.test(v);
+                const regex = /^https:\/\/assignment-solutions\.s3\.ap-south-1\.amazonaws\.com\/A/;
+                return regex.test(v);
             },
-            message: props => `${props.value} is not a valid URL!`,
+            message: props => `${props.value} is not a valid file URL! It must start with "https://assignment-solutions.s3.ap-south-1.amazonaws.com/A".`,
         },
     },
     fileType: {
         type: String,
-        enum: ['pdf', 'docx', 'ppt', 'video', 'image', 'other'],
+        enum: ['application/pdf', 'application/docx', 'application/ppt', 'application/video', 'application/image', 'other'],
         required: true,
     },
     videoLink: {
         type: String,
-        
         validate: {
             validator: function (v) {
-                return v === '' || /^(http|https):\/\/[^ "]+$/.test(v);
+                return (
+                    v === '' || 
+                    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^\s&]+$/.test(v)
+                );
             },
-            message: props => `${props.value} is not a valid URL!`,
+            message: props => `${props.value} is not a valid YouTube URL!`,
         },
     },
     tags: {

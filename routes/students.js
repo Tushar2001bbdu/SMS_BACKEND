@@ -62,4 +62,10 @@ Router.get(
   studentController.getStudentFeesDetails
 );
 
+Router.get(
+  "/getClassSchedule/:classSection",
+  authenticateStudentToken,
+  studentController.getClassSchedule
+);
+
 module.exports = Router;
