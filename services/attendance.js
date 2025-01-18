@@ -9,7 +9,6 @@ const { SearchFacesByImageCommand } = require("@aws-sdk/client-rekognition");
 
 class attendance {
   static async updateAttendance(url, rollno) {
-    rollno="121078899"
     const base64Data = url.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
     const key = `webcams/${Date.now()}/${rollno}.jpg`;
