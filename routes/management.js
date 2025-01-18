@@ -1,25 +1,18 @@
 const express = require("express");
-
 const User = require("../models/students");
 const Results = require("../models/examresult");
 const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
-
+const { message } = require("../models/chatMessages");
 const { body, validationResult } = require("express-validator");
-
-
 const Teachers = require("../models/teachers");
-
 const bcrypt = require("bcrypt");
-// Import the functions you need from the SDKs you need
 const admin = require("firebase-admin");
-
-
 const users = require("../models/students");
 const teachers = require("../models/teachers");
 const Class = require("../models/classes");
 const appstudents = admin.app("students");
-const appteachers= admin.app("teachers");
+const appteachers = admin.app("teachers");
 
 //LA-Library Availed;AF-Academic Fees;TF-Total Fees Paid;FP-Training and Placement Fees Paid
 //Route adding necessary details for a student having a account in the Student Management System
@@ -37,7 +30,7 @@ Router.post(
     body("teacher", "Enter a valid Teacher Name").isLength({ min: 5 }),
     body("rollno", "Enter a valid Roll No").isLength({ min: 5 }),
     body("teacherrollno", "Enter a valid Teacher Roll No").isLength({ min: 5 }),
-    
+
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -66,7 +59,7 @@ Router.post(
             branch: req.body.branch,
             classteacher: req.body.teacher,
             rollno: req.body.rollno,
-            teacherrollno:req.body.teacherrollno
+            teacherrollno: req.body.teacherrollno
 
           });
           await Results.create({
@@ -74,11 +67,15 @@ Router.post(
             name: req.body.name,
           });
           await Details.create(
-            { rollno: req.body.rollno , name:req.body.name}
+            { rollno: req.body.rollno, name: req.body.name }
           );
           // adding student to teacher list of students
-          let teacher=await Teachers.findOne({ rollno:req.body.teacherrollno}).select('studentslist')
+          let teacher = await Teachers.findOne({ rollno: req.body.teacherrollno }).select('studentslist')
           teacher.studentslist.push(req.body.rollno)
+          teacher.students.push({
+            "name":req.body.name,
+            "rollno":req.body.rollno
+          })
           await teacher.save();
           let USER = {
             email: req.body.email,
@@ -90,7 +87,7 @@ Router.post(
             emailVerified: false,
             disabled: false,
           });
-         
+
 
           res.status(201).json({
             success: "You have successfully created an account",
@@ -152,8 +149,8 @@ Router.post(
             emailVerified: false,
             disabled: false,
           });
-         
-          
+
+
 
           res.status(201).send(
             "You have successfully created an account in the teachers database"
@@ -217,7 +214,7 @@ Router.post(
     } catch (error) {
       console.error(error);
       res.json({
-        status:500,
+        status: 500,
         message: 'An error occurred while creating the class',
       });
     }
@@ -238,53 +235,29 @@ Router.patch(
         errors: errors.array(),
       });
     }
-    try{
+    try {
       const { classCode, teacherrollno } = req.body;
-      let updatedClass=await Class.findOneAndUpdate(
-        { name: classCode}, 
+      let updatedClass = await Class.findOneAndUpdate(
+        { name: classCode },
         { $addToSet: { teachers: teacherrollno } }
       );
-      
+
       res.json({
         status: 200,
         message: 'Student has been added to class successfully',
-        updatedClass:updatedClass
+        updatedClass: updatedClass
       });
-      
+
     }
     catch (error) {
       console.error(error);
       res.json({
-        status:500,
+        status: 500,
         message: 'An error occurred while creating the class',
       });
     }
   }
 )
-
-Router.post("/addResult", [
-  body("rollno", "Enter a valid roll no").isLength({ min: 3 })],async (req, res) => {
-  try {
-    let user = await Results.findOne({ rollno: req.body.rollno });
-if(user!==null){
-  res.status(401).send("You have already added Result")
-}
-else{
-  await Results.create({
-    rollno: req.body.rollno,
-    name: req.body.name,
-  });
-
-  res.status(201).send({
-    "success":"An account for the student has been successfully created in the results database"}
-  );
-}
-    
- } catch (error) {
-    console.log(error);
-    res.status(401).json("You have entered invalid data");
-  }
-});
 Router.patch(
   "/addStudentToClass",
   [
@@ -300,74 +273,52 @@ Router.patch(
         errors: errors.array(),
       });
     }
-    try{
+    try {
       const { classCode, studentrollno } = req.body;
-      let updatedClass=await Class.findOneAndUpdate(
-        { name: classCode}, 
+      let updatedClass = await Class.findOneAndUpdate(
+        { name: classCode },
         { $addToSet: { students: studentrollno } }
       );
-      
+
       res.json({
         status: 200,
         message: 'Student has been added to class successfully',
-        updatedClass:updatedClass
+        updatedClass: updatedClass
       });
-      
+
     }
     catch (error) {
       console.error(error);
       res.json({
-        status:500,
+        status: 500,
         message: 'An error occurred while creating the class',
       });
     }
   }
 )
-Router.post("/addDetails",
-  [
-    body("rollno", "Enter a valid roll no").isLength({ min: 3 })] ,async (req, res) => {
-  try {
-    let user = await User.findOne({ rollno: req.body.rollno });
-    if(user!==null){
-
-      res.status(401).send("You have already added Result")
-    }
-    else{
-
-    
-    
-
-    res.status(201).send("A account in details database has been created successfuly");}
-  }catch (error) {
-    console.log(error);
-    res.status(500).send({ status: "some error has occured" });
-  }
-});
-
 Router.put("/changeAcadFees", async (req, res) => {
   try {
     let user = await Details.findOne(
       { rollno: req.body.rollno })
-    if(user===null){
-      res.status(401).send("You have not created the student Details account")
+    if (user === null) {
+      res.json({status:401,message:"You have not created the student Details account"})
     }
-    else{
-    user = await Details.findOneAndUpdate(
-      { rollno: req.body.rollno },
-      { AcademicFeesPaid: req.body.AF }
-    );
-    let TFP = user.TotalFeesPaid;
-    TFP = TFP + req.body.AF;
-    user = await Details.findOneAndUpdate(
-      { rollno: req.body.rollno },
-      { TotalFeesPaid: TFP }
-    );
-    user = await Details.findOne({ rollno: req.body.rollno });
+    else {
+      user = await Details.findOneAndUpdate(
+        { rollno: req.body.rollno },
+        { AcademicFeesPaid: req.body.AF }
+      );
+      let TFP = user.TotalFeesPaid;
+      TFP = TFP + req.body.AF;
+      user = await Details.findOneAndUpdate(
+        { rollno: req.body.rollno },
+        { TotalFeesPaid: TFP }
+      );
 
-    res.status(200).json(user);}
+      res.json({status:200,message:"academic fees has been updated"});
+    }
   } catch (error) {
-    console.log(error);
-    res.status(501).send({ status: "some error has occured" });
+    res.json({ status:500,message: "some error has occured" });
   }
 });
 
@@ -376,24 +327,25 @@ Router.put("/changeTandPFees", async (req, res) => {
   try {
     let user = await Details.findOne(
       { rollno: req.body.rollno })
-    if(user===null){
+    if (user === null) {
       res.status(401).send("You have not created the student Details account")
     }
-    else{
+    else {
 
-    user = await Details.findOneAndUpdate(
-      { rollno: req.body.rollno },
-      { TandPFeesPaid: req.body.TP }
-    );
-    let TFP = user.TotalFeesPaid;
-    TFP = TFP + req.body.TP;
-    user = await Details.findOneAndUpdate(
-      { rollno: req.body.rollno },
-      { TotalFeesPaid: TFP }
-    );
-    user = await Details.findOne({ rollno: req.body.rollno });
+      user = await Details.findOneAndUpdate(
+        { rollno: req.body.rollno },
+        { TandPFeesPaid: req.body.TP }
+      );
+      let TFP = user.TotalFeesPaid;
+      TFP = TFP + req.body.TP;
+      user = await Details.findOneAndUpdate(
+        { rollno: req.body.rollno },
+        { TotalFeesPaid: TFP }
+      );
+      user = await Details.findOne({ rollno: req.body.rollno });
 
-    res.status(201).json(user);}
+      res.status(201).json(user);
+    }
   } catch (error) {
     console.log(error);
     res.status(501).send({ status: "some error has occured" });
@@ -404,17 +356,18 @@ Router.put("/changeLibraryAvailed", async (req, res) => {
   try {
     let user = await Details.findOne(
       { rollno: req.body.rollno })
-    if(user===null){
+    if (user === null) {
       res.status(401).send("You have not created the student Details account")
     }
-    else{
-     user = await Details.findOneAndUpdate(
-      { rollno: req.body.rollno },
-      { LibraryAvailed: req.body.LA }
-    );
-    user = await Details.findOne({ rollno: req.body.rollno });
+    else {
+      user = await Details.findOneAndUpdate(
+        { rollno: req.body.rollno },
+        { LibraryAvailed: req.body.LA }
+      );
+      user = await Details.findOne({ rollno: req.body.rollno });
 
-    res.status(200).json(user);}
+      res.status(200).json(user);
+    }
   } catch (error) {
     res.status(501).send({ status: "some error has occured" });
   }
@@ -423,69 +376,84 @@ Router.put("/changeTeacherAttendance", async (req, res) => {
   try {
     let user = await Teachers.findOne(
       { rollno: req.body.rollno })
-    if(user===null){
+    if (user === null) {
       res.status(401).send("You have not created the Teachers account")
     }
-    else{
-     user = await Teachers.findOne(
-      { rollno: req.body.rollno }
-      
-    );
-    let attendance=user.attendance+1;
-    
-     user=await Details.findOneAndUpdate({ rollno: req.body.rollno },{attenadnce:attendance});
+    else {
+      user = await Teachers.findOne(
+        { rollno: req.body.rollno }
 
-    res.status(200).json(user);}
+      );
+      let attendance = user.attendance + 1;
+
+      user = await Details.findOneAndUpdate({ rollno: req.body.rollno }, { attenadnce: attendance });
+
+      res.status(200).json(user);
+    }
   } catch (error) {
     res.status(501).send({ status: "some error has occured" });
   }
 });
-Router.delete("/deleteStudent",async(req,res)=>{
+Router.delete("/deleteStudent", async (req, res) => {
   try {
     let user = await Details.findOne(
       { rollno: req.body.rollno })
-    if(user===null){
+    if (user === null) {
       res.status(401).send("You have not created the student Details account")
     }
-    else{
-     await Details.findOneAndDelete(
-      { rollno: req.body.rollno },
-      
-    );
-    await Results.findOneAndDelete(
-      { rollno: req.body.rollno },
-      
-    );
-    await users.findOneAndDelete(
-      { rollno: req.body.rollno },
-      
-    );
-    
+    else {
+      await Details.findOneAndDelete(
+        { rollno: req.body.rollno },
 
-    res.status(200).send("The student account has been deleted successfully");}
+      );
+      await Results.findOneAndDelete(
+        { rollno: req.body.rollno },
+
+      );
+      await users.findOneAndDelete(
+        { rollno: req.body.rollno },
+
+      );
+
+
+      res.status(200).send("The student account has been deleted successfully");
+    }
   } catch (error) {
     console.log(error)
     res.status(501).send({ status: "some error has occured" });
   }
 })
-Router.delete("/deleteTeacher",async(req,res)=>{
+Router.delete("/deleteTeacher", async (req, res) => {
   try {
     let user = await teachers.findOne(
       { rollno: req.body.rollno })
-    if(user===null){
+    if (user === null) {
       res.status(401).send("You have not created the  teachers account yet")
     }
-    else{
-     await teachers.findOneAndDelete(
-      { rollno: req.body.rollno },
-      
-    );
-    
-    
+    else {
+      await teachers.findOneAndDelete(
+        { rollno: req.body.rollno },
 
-    res.status(200).send("The teacher account has been deleted successfully");}
+      );
+
+
+
+      res.status(200).send("The teacher account has been deleted successfully");
+    }
   } catch (error) {
     res.status(501).send({ status: "some error has occured" });
   }
 })
+// Get chat history between parent and teacher
+Router.get('/messages/:senderId/:receiverId', async (req, res) => {
+  const { senderId, receiverId } = req.params;
+  const messages = await message.find({
+    $or: [
+      { sender: senderId, receiver: receiverId },
+      { sender: receiverId, receiver: senderId },
+    ],
+  }).sort({ timestamp: 1 });
+
+  res.json(messages);
+});
 module.exports = Router;

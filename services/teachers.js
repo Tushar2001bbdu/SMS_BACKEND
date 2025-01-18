@@ -2,12 +2,10 @@ const students = require("../models/students");
 const Teachers = require("../models/teachers");
 const studentresult = require("../models/examresult");
 const admin = require("firebase-admin");
-const appteachers = admin.app("teachers");
 class TeacherService {
   static async seeDetails(rollno) {
     try {
-      let teacher = await Teachers.findOne({ "rollno":rollno });
-     console.log(teacher)
+      let teacher = await Teachers.findOne({ "rollno":rollno })
 
       return teacher;
     } catch(error) {
@@ -61,9 +59,7 @@ class TeacherService {
   }
   static async getStudentList(section) {
     try {
-      console.log("the section is" + section);
       let student = await students.find({ "section": section });
-      console.log(student);
       return student;
     } catch (error) {
       throw error;

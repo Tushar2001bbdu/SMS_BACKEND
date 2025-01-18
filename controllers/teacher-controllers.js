@@ -22,7 +22,7 @@ exports.login = async (req, res) => {
   try {
   if(await teacherCheck(req.body.userDetails.email,rollno)){
 
-    res.status(200).json({
+    res.json({
       status: 200,
       message: "You have logged in successfully",
     });}
@@ -78,23 +78,23 @@ exports.getStudentsList = async (req, res) => {
     
 
     if (section === undefined) {
-      res.status(400).json({ status: 400, message: "Section is required" });
+      res.json({ status: 400, message: "Section is required" });
     } else {
       let response = await teacherService.getStudentList(section);
-      res.status(200).send({ status: 200, data: response });
+      res.json({ status: 200, data: response });
     }
   } catch (error) {
     console.log(error);
-    res.status(500).json({ status: 500, message: error.message });
+    res.json({ status: 500, message: error.message });
   }
 };
 exports.logout = async (req, res) => {
   let { accessToken } = req.body;
   try {
     let response = await teacherService.logout(accessToken);
-    res.status(200).send({ status: 200, data: response });
+    res.json({ status: 200, data: response });
   } catch (error) {
-    res.status(500).json({ status: 500, message: error.message });
+    res.json({ status: 500, message: error.message });
   }
 };
 

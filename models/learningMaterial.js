@@ -1,4 +1,5 @@
 const mongoose = require('mongoose');
+const validator=require('validator');
 
 const learningMaterialSchema = new mongoose.Schema({
     title: {
@@ -24,29 +25,30 @@ const learningMaterialSchema = new mongoose.Schema({
         required: true,
         validate: {
             validator: function (v) {
-                const regex = /^https:\/\/assignment-solutions\.s3\.ap-south-1\.amazonaws\.com\/A/;
+                const regex = /^https:\/\/assignmentsolutions\.s3\.ap-south-1\.amazonaws\.com/;
                 return regex.test(v);
             },
-            message: props => `${props.value} is not a valid file URL! It must start with "https://assignment-solutions.s3.ap-south-1.amazonaws.com/A".`,
+            message: props => `${props.value} is not a valid file URL! It must start with "https://assignmentsolutions.s3.ap-south-1.amazonaws.com/A".`,
         },
     },
     fileType: {
         type: String,
-        enum: ['application/pdf', 'application/docx', 'application/ppt', 'application/video', 'application/image', 'other'],
+        enum: ['text/plain', 'applicatiion/docx', 'application/ppt', 'application/video', 'application/image', 'other'],
         required: true,
     },
     videoLink: {
         type: String,
         validate: {
-            validator: function (v) {
-                return (
-                    v === '' || 
-                    /^(https?:\/\/)?(www\.)?(youtube\.com\/watch\?v=|youtu\.be\/)[^\s&]+$/.test(v)
-                );
-            },
-            message: props => `${props.value} is not a valid YouTube URL!`,
+          validator: function (v) {
+            return (
+              v === '' || 
+              (validator.isURL(v) && 
+               (v.includes('youtube.com/watch?v=') || v.includes('youtu.be/')))
+            );
+          },
+          message: props => `${props.value} is not a valid YouTube URL!`,
         },
-    },
+      },
     tags: {
         type: [String],
         default: [],

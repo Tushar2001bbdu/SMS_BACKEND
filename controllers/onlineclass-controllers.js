@@ -7,13 +7,13 @@ async function generateAccessSignature(req, res) {
       role
     );
     const token=await onlineClassService.getOAuthToken();
-    return res.send({
+    res.send({
       status: 200,
       signature: signature,
       accessToken: token
     });
   } catch (error) {
-    return res.send({ status: 500, message: error });
+    res.send({ status: 500, message: error });
   }
 }
 

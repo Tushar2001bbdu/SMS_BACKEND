@@ -1,7 +1,7 @@
-const students = require("../models/students");
 const studentresult = require("../models/examresult");
 const feesdetails = require("../models/feespaymentdetails");
 const Class = require("../models/classes");
+const students = require("../models/students");
 
 class StudentService {
   static async seeDetails(rollno) {

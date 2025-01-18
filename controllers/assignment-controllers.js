@@ -25,7 +25,7 @@ async function markAssignment(req, res) {
         const fileName = decodeURIComponent(s3Link.split("/").pop());
 
         const params = {
-            Bucket: "assignment-solutions",
+            Bucket: "assignmentsolutions",
             Key: fileName,
         };
 
@@ -66,9 +66,9 @@ async function markAssignment(req, res) {
         }
 
         const analysis = await analyzeContent(content,subject,rollno);
-        res.status(200).json({ status: 200, analysis:analysis });
+        res.json({ status: 200, analysis:analysis });
     } catch (error) {
-        res.status(500).json({ status: 500, message: error.message });
+        res.json({ status: 500, message: error.message });
     }
 }
 
@@ -103,7 +103,7 @@ try{
     await updateStudentResult(marks,rollno)
 }
 catch(error){
-    res.status(500).json({ status: 500, message: error.message });
+    res.json({ status: 500, message: error.message });
 }
     
 };

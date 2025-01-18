@@ -7,26 +7,17 @@ const { QueryCommand } = require("@aws-sdk/client-dynamodb");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 
 const { SearchFacesByImageCommand } = require("@aws-sdk/client-rekognition");
-let response;
 
 class attendance {
-  static async updateAttendance(url,rollno) {
+  static async updateAttendance(url, rollno) {
     const base64Data = url.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
     const key = `webcams/${Date.now()}/${rollno}.jpg`;
-    const training_params = {
-      Bucket: "schools-management-system-bucket",
-      Key: key,
-      Body: buffer,
-      ContentType: "image/jpeg",
-      Metadata: { rollno: rollno },
-    };
-
+    
     const testing_params = {
-      Bucket: "school-management-system-bucket-testing",
+      Bucket: "school-management-testing",
       Key: key,
       Body: buffer,
-
       ContentType: "image/jpeg",
       Metadata: { rollno: rollno },
     };
@@ -38,38 +29,39 @@ class attendance {
         CollectionId: "smsusers",
         Image: {
           S3Object: {
-            Bucket: "school-management-system-bucket-testing",
-            Name: `webcams/${key}.jpg`,
+            Bucket: "school-management-testing",
+            Name: `webcams/${key}`,
           },
         },
         MaxFaces: 5,
-
         FaceMatchThreshold: 95,
       });
-       try{
-        response = await rekognitionClient.send(faceMatches);
-       }
-       catch(error){
-          console.error(error);
-       }
-      
+
+      const response = await rekognitionClient.send(faceMatches);
 
       if (!response.FaceMatches || response.FaceMatches.length === 0) {
-        throw error;
+        throw new Error('No face matches found');
       } else {
         const matchedFaceId = response.FaceMatches[0].Face.FaceId;
         await this.queryDynamoDB(matchedFaceId);
+        const training_params = {
+          Bucket: "school-managemengt-system-bucket",
+          Key: key,
+          Body: buffer,
+          ContentType: "image/jpeg",
+          Metadata: { rollno: rollno },
+        };
         await s3Client.send(new PutObjectCommand(training_params));
       }
     } catch (error) {
-      console.error(error);
+      console.error('Error in updating attendance:', error);
     }
   }
-  static async  queryDynamoDB(RecognitionId) {
+
+  static async queryDynamoDB(RecognitionId) {
     try {
       const params = {
         TableName: "facerecognition",
-
         KeyConditionExpression: "RekognitionId = :value",
         ExpressionAttributeValues: {
           ":value": { S: RecognitionId },
@@ -77,51 +69,49 @@ class attendance {
       };
       const data = await dynamoDBClient.send(new QueryCommand(params));
 
-      let rollno = data.Items[0].RollNo.S;
-      this.setAttendance(rollno);
+      if (data.Items && data.Items.length > 0) {
+        let rollno = data.Items[0].RollNo.S;
+        this.setAttendance(rollno);
+      } else {
+        console.error('No matching RekognitionId found in DynamoDB');
+      }
     } catch (error) {
       console.error(error);
     }
   }
+
+  static async updateUserAttendance(user) {
+    const time = Date.now();
+    let currentDate = new Date(time).toISOString().split("T")[0];
+    let updatedDate = new Date(user.attendance.updatedAt)
+      .toISOString()
+      .split("T")[0];
+    updatedDate = updatedDate.substring(8, 10);
+
+    if (updatedDate !== currentDate) {
+      let attendance = user.attendance.value + 1;
+      user.attendance.value = attendance;
+      user.attendance.updatedAt = currentDate;
+      await user.save();
+    }
+  }
+
   static async setAttendance(rollno) {
     try {
-      let attendance;
       let validStudent = await students.findOne({ rollno: rollno });
       let validTeacher = await teachers.findOne({ rollno: rollno });
-      const time = Date.now();
-      let currentDate = new Date(time).toISOString().split("T")[0];
 
       if (validStudent) {
-        let studentUpdatedDate = new Date(validStudent.attendance.updatedAt)
-          .toISOString()
-          .split("T")[0];
-        studentUpdatedDate = studentUpdatedDate.substring(8, 10);
-        console.log(studentUpdatedDate);
-        if (studentUpdatedDate !== currentDate) {
-          attendance = validStudent.attendance.value + 1;
-          validStudent.attendance.value = attendance;
-          validStudent.attendance.updatedAt = currentDate;
-          await validStudent.save();
-        }
+        await this.updateUserAttendance(validStudent);
       }
 
-      // If it's a teacher
       if (validTeacher) {
-        // Convert the stored `updatedAt` to YYYY-MM-DD format
-        let teacherUpdatedDate = new Date(validTeacher.attendance.updatedAt)
-          .toISOString()
-          .split("T")[0];
-
-        if (teacherUpdatedDate !== currentDate) {
-          attendance = validTeacher.attendance.value + 1;
-          validTeacher.attendance.value = attendance;
-          validTeacher.attendance.updatedAt = currentDate;
-          await validTeacher.save();
-        }
+        await this.updateUserAttendance(validTeacher);
       }
     } catch (error) {
       throw error;
     }
   }
 }
+
 module.exports = attendance;

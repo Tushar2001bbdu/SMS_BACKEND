@@ -20,10 +20,13 @@ const schema = new Schema({
     type: String,
     required: true,
     validate: {
-      validator: v => /^https:\/\/[^\s]+$/.test(v),
-      message: 'Invalid URL'
-    }
-  },
+      validator: function (v) {
+        const regex = /^https:\/\/student-assignment-questions\.s3\.ap-south-1\.amazonaws\.com/;
+        return regex.test(v);
+    },
+    message: props => `${props.value} is not a valid file URL! It must start with "https://student-assignment-questions.s3.ap-south-1.amazonaws.com/A".`,
+},
+    },
   subject: {
     type: String,
     required: true,

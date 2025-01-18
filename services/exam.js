@@ -46,7 +46,7 @@ class Exam {
   static async uploadSinglePart(buffer, key, rollno) {
     try {
       const frames_bucket = {
-        Bucket: "examframesbucket",
+        Bucket: "examframebuckets",
         Key: key,
         Body: buffer,
         ContentType: "image/jpeg",
@@ -62,7 +62,7 @@ class Exam {
 
   static async uploadMultipart(buffer, key, rollno) {
     const startCommand = new CreateMultipartUploadCommand({
-      Bucket: "examframesbucket",
+      Bucket: "examframebuckets",
       Key: key,
       ContentType: "image/jpeg",
       Metadata: { rollno: rollno },
@@ -75,7 +75,7 @@ class Exam {
       for (let i = 0; i < buffer.length; i += partSize) {
         const partBuffer = buffer.slice(i, i + partSize);
         const uploadPartCommand = new UploadPartCommand({
-          Bucket: "examframesbucket",
+          Bucket: "examframebuckets",
           Key: key,
           PartNumber: parts.length + 1,
           UploadId,
@@ -86,7 +86,7 @@ class Exam {
       }
 
       const completeCommand = new CompleteMultipartUploadCommand({
-        Bucket: "examframesbucket",
+        Bucket: "examframebuckets",
         Key: key,
         UploadId,
         MultipartUpload: { Parts: parts },
@@ -98,22 +98,24 @@ class Exam {
       console.error("Error during multipart upload:", error);
       if (UploadId) {
         const abortCommand = new AbortMultipartUploadCommand({
-          Bucket: "examframesbucket",
+          Bucket: "examframebuckets",
           Key: key,
           UploadId,
         });
         await s3Client.send(abortCommand);
         console.log("Multipart upload aborted.");
       }
+
       throw error;
     }
   }
 
   static async detectFraud(key) {
+
     const params = {
       Image: {
         S3Object: {
-          Bucket: "examframesbucket",
+          Bucket: "examframebuckets",
           Name: key,
         },
       },
