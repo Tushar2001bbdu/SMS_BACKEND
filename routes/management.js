@@ -30,13 +30,12 @@ Router.post(
     body("teacher", "Enter a valid Teacher Name").isLength({ min: 5 }),
     body("rollno", "Enter a valid Roll No").isLength({ min: 5 }),
     body("teacherrollno", "Enter a valid Teacher Roll No").isLength({ min: 5 }),
-
   ],
   async (req, res) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-      console.log(errors)
+      console.log(errors);
       res.status(500).send({ success: "You have entered inavlid credentials" });
     } else {
       try {
@@ -59,23 +58,25 @@ Router.post(
             branch: req.body.branch,
             classteacher: req.body.teacher,
             rollno: req.body.rollno,
-            teacherrollno: req.body.teacherrollno
-
+            teacherrollno: req.body.teacherrollno,
           });
           await Results.create({
             rollno: req.body.rollno,
             name: req.body.name,
           });
-          await Details.create(
-            { rollno: req.body.rollno, name: req.body.name }
-          );
+          await Details.create({
+            rollno: req.body.rollno,
+            name: req.body.name,
+          });
           // adding student to teacher list of students
-          let teacher = await Teachers.findOne({ rollno: req.body.teacherrollno }).select('studentslist')
-          teacher.studentslist.push(req.body.rollno)
+          let teacher = await Teachers.findOne({
+            rollno: req.body.teacherrollno,
+          }).select("studentslist");
+          teacher.studentslist.push(req.body.rollno);
           teacher.students.push({
-            "name":req.body.name,
-            "rollno":req.body.rollno
-          })
+            name: req.body.name,
+            rollno: req.body.rollno,
+          });
           await teacher.save();
           let USER = {
             email: req.body.email,
@@ -87,7 +88,6 @@ Router.post(
             emailVerified: false,
             disabled: false,
           });
-
 
           res.status(201).json({
             success: "You have successfully created an account",
@@ -123,12 +123,10 @@ Router.post(
         let teacher = Teachers.findOne({ rollno: req.body.rollno });
 
         if (teacher == true) {
-          res
-            .status(401)
-            .send({
-              status:
-                "You have already an account on this Student Management System",
-            });
+          res.status(401).send({
+            status:
+              "You have already an account on this Student Management System",
+          });
         } else {
           teacher = await Teachers.create({
             email: req.body.email,
@@ -150,11 +148,11 @@ Router.post(
             disabled: false,
           });
 
-
-
-          res.status(201).send(
-            "You have successfully created an account in the teachers database"
-          );
+          res
+            .status(201)
+            .send(
+              "You have successfully created an account in the teachers database"
+            );
         }
       } catch (error) {
         console.log(error);
@@ -166,17 +164,29 @@ Router.post(
 
 //Route to create class for a teacher in the Student Management System
 Router.post(
-  '/createClass',
+  "/createClass",
   [
-    body('name', 'Class name should be at least 3 characters long').isLength({ min: 3 }),
-    body('code', 'Class code must be provided').notEmpty(),
-    body('teachers', 'A valid teacher ID must be provided').notEmpty(),
-    body('room', 'Room name or "Online" must be specified').notEmpty(),
-    body('schedule.day', 'Day must be a valid weekday').isIn([
-      'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday',
+    body("name", "Class name should be at least 3 characters long").isLength({
+      min: 3,
+    }),
+    body("code", "Class code must be provided").notEmpty(),
+    body("teachers", "A valid teacher ID must be provided").notEmpty(),
+    body("room", 'Room name or "Online" must be specified').notEmpty(),
+    body("schedule.day", "Day must be a valid weekday").isIn([
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
     ]),
-    body('schedule.time.start', 'Start time must be in HH:mm format').matches(/^([01]\d|2[0-3]):([0-5]\d)$/),
-    body('schedule.time.end', 'End time must be in HH:mm format').matches(/^([01]\d|2[0-3]):([0-5]\d)$/),
+    body("schedule.time.start", "Start time must be in HH:mm format").matches(
+      /^([01]\d|2[0-3]):([0-5]\d)$/
+    ),
+    body("schedule.time.end", "End time must be in HH:mm format").matches(
+      /^([01]\d|2[0-3]):([0-5]\d)$/
+    ),
   ],
   async (req, res) => {
     const errors = validationResult(req);
@@ -184,7 +194,7 @@ Router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({
         status: 400,
-        message: 'Invalid data provided for class creation',
+        message: "Invalid data provided for class creation",
         errors: errors.array(),
       });
     }
@@ -195,7 +205,7 @@ Router.post(
       if (existingClass) {
         return res.status(409).json({
           status: 409,
-          message: 'Class with this code already exists',
+          message: "Class with this code already exists",
         });
       }
       const newClass = await Class.create({
@@ -208,14 +218,14 @@ Router.post(
 
       res.json({
         status: 200,
-        message: 'Class created successfully',
+        message: "Class created successfully",
         data: newClass,
       });
     } catch (error) {
       console.error(error);
       res.json({
         status: 500,
-        message: 'An error occurred while creating the class',
+        message: "An error occurred while creating the class",
       });
     }
   }
@@ -223,15 +233,18 @@ Router.post(
 Router.patch(
   "/addTeacherToClass",
   [
-    body('classCode', 'Class name should be at least 3 characters long').isLength({ min: 3 }),
-    body('teacherrollno', 'A valid teacher ID must be provided').notEmpty()
+    body(
+      "classCode",
+      "Class name should be at least 3 characters long"
+    ).isLength({ min: 3 }),
+    body("teacherrollno", "A valid teacher ID must be provided").notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         status: 400,
-        message: 'Invalid data provided for class creation',
+        message: "Invalid data provided for class creation",
         errors: errors.array(),
       });
     }
@@ -244,32 +257,33 @@ Router.patch(
 
       res.json({
         status: 200,
-        message: 'Student has been added to class successfully',
-        updatedClass: updatedClass
+        message: "Student has been added to class successfully",
+        updatedClass: updatedClass,
       });
-
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
       res.json({
         status: 500,
-        message: 'An error occurred while creating the class',
+        message: "An error occurred while creating the class",
       });
     }
   }
-)
+);
 Router.patch(
   "/addStudentToClass",
   [
-    body('classCode', 'Class name should be at least 3 characters long').isLength({ min: 3 }),
-    body('studentrollno', 'A valid student ID must be provided').notEmpty()
+    body(
+      "classCode",
+      "Class name should be at least 3 characters long"
+    ).isLength({ min: 3 }),
+    body("studentrollno", "A valid student ID must be provided").notEmpty(),
   ],
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({
         status: 400,
-        message: 'Invalid data provided for student adding',
+        message: "Invalid data provided for student adding",
         errors: errors.array(),
       });
     }
@@ -282,28 +296,27 @@ Router.patch(
 
       res.json({
         status: 200,
-        message: 'Student has been added to class successfully',
-        updatedClass: updatedClass
+        message: "Student has been added to class successfully",
+        updatedClass: updatedClass,
       });
-
-    }
-    catch (error) {
+    } catch (error) {
       console.error(error);
       res.json({
         status: 500,
-        message: 'An error occurred while creating the class',
+        message: "An error occurred while creating the class",
       });
     }
   }
-)
-Router.put("/changeAcadFees", async (req, res) => {
+);
+Router.patch("/changeAcadFees", async (req, res) => {
   try {
-    let user = await Details.findOne(
-      { rollno: req.body.rollno })
+    let user = await Details.findOne({ rollno: req.body.rollno });
     if (user === null) {
-      res.json({status:401,message:"You have not created the student Details account"})
-    }
-    else {
+      res.json({
+        status: 401,
+        message: "You have not created the student Details account",
+      });
+    } else {
       user = await Details.findOneAndUpdate(
         { rollno: req.body.rollno },
         { AcademicFeesPaid: req.body.AF }
@@ -315,23 +328,23 @@ Router.put("/changeAcadFees", async (req, res) => {
         { TotalFeesPaid: TFP }
       );
 
-      res.json({status:200,message:"academic fees has been updated"});
+      res.json({ status: 200, message: "academic fees has been updated" });
     }
   } catch (error) {
-    res.json({ status:500,message: "some error has occured" });
+    res.json({ status: 500, message: "some error has occured" });
   }
 });
 
 //Route for updating Training and Placement Fees Paid  for a student having a account in the Student Management System
-Router.put("/changeTandPFees", async (req, res) => {
+Router.patch("/changeTandPFees", async (req, res) => {
   try {
-    let user = await Details.findOne(
-      { rollno: req.body.rollno })
+    let user = await Details.findOne({ rollno: req.body.rollno });
     if (user === null) {
-      res.status(401).send("You have not created the student Details account")
-    }
-    else {
-
+      res.json({
+        status: 401,
+        message: "You have not created the student Details account",
+      });
+    } else {
       user = await Details.findOneAndUpdate(
         { rollno: req.body.rollno },
         { TandPFeesPaid: req.body.TP }
@@ -342,24 +355,25 @@ Router.put("/changeTandPFees", async (req, res) => {
         { rollno: req.body.rollno },
         { TotalFeesPaid: TFP }
       );
-      user = await Details.findOne({ rollno: req.body.rollno });
-
-      res.status(201).json(user);
+      res.json({
+        sttaus: 200,
+        message: "Training and Placement Fees has been updated",
+      });
     }
   } catch (error) {
-    console.log(error);
-    res.status(501).send({ status: "some error has occured" });
+    res.json({ status: 500, message: error });
   }
 });
 //Route for updating whether Student has availed Library Or Not  for a student having a account in the Student Management System
-Router.put("/changeLibraryAvailed", async (req, res) => {
+Router.patch("/changeLibraryAvailed", async (req, res) => {
   try {
-    let user = await Details.findOne(
-      { rollno: req.body.rollno })
+    let user = await Details.findOne({ rollno: req.body.rollno });
     if (user === null) {
-      res.status(401).send("You have not created the student Details account")
-    }
-    else {
+      res.json({
+        status: 401,
+        message: "You have not created the student Details account",
+      });
+    } else {
       user = await Details.findOneAndUpdate(
         { rollno: req.body.rollno },
         { LibraryAvailed: req.body.LA }
@@ -372,87 +386,58 @@ Router.put("/changeLibraryAvailed", async (req, res) => {
     res.status(501).send({ status: "some error has occured" });
   }
 });
-Router.put("/changeTeacherAttendance", async (req, res) => {
-  try {
-    let user = await Teachers.findOne(
-      { rollno: req.body.rollno })
-    if (user === null) {
-      res.status(401).send("You have not created the Teachers account")
-    }
-    else {
-      user = await Teachers.findOne(
-        { rollno: req.body.rollno }
 
-      );
-      let attendance = user.attendance + 1;
-
-      user = await Details.findOneAndUpdate({ rollno: req.body.rollno }, { attenadnce: attendance });
-
-      res.status(200).json(user);
-    }
-  } catch (error) {
-    res.status(501).send({ status: "some error has occured" });
-  }
-});
 Router.delete("/deleteStudent", async (req, res) => {
   try {
-    let user = await Details.findOne(
-      { rollno: req.body.rollno })
+    let user = await Details.findOne({ rollno: req.body.rollno });
     if (user === null) {
-      res.status(401).send("You have not created the student Details account")
-    }
-    else {
-      await Details.findOneAndDelete(
-        { rollno: req.body.rollno },
+      res.json({
+        status: 401,
+        message: "You have not created the student Details account",
+      });
+    } else {
+      await Details.findOneAndDelete({ rollno: req.body.rollno });
+      await Results.findOneAndDelete({ rollno: req.body.rollno });
+      await users.findOneAndDelete({ rollno: req.body.rollno });
 
-      );
-      await Results.findOneAndDelete(
-        { rollno: req.body.rollno },
-
-      );
-      await users.findOneAndDelete(
-        { rollno: req.body.rollno },
-
-      );
-
-
-      res.status(200).send("The student account has been deleted successfully");
+      res.json({
+        status: 200,
+        message: "The student account has been deleted successfully",
+      });
     }
   } catch (error) {
-    console.log(error)
-    res.status(501).send({ status: "some error has occured" });
+    console.log(error);
+    res.json({ status: 501, message: "some error has occured" });
   }
-})
+});
 Router.delete("/deleteTeacher", async (req, res) => {
   try {
-    let user = await teachers.findOne(
-      { rollno: req.body.rollno })
+    let user = await teachers.findOne({ rollno: req.body.rollno });
     if (user === null) {
-      res.status(401).send("You have not created the  teachers account yet")
-    }
-    else {
-      await teachers.findOneAndDelete(
-        { rollno: req.body.rollno },
+      res.status(401).send("You have not created the  teachers account yet");
+    } else {
+      await teachers.findOneAndDelete({ rollno: req.body.rollno });
 
-      );
-
-
-
-      res.status(200).send("The teacher account has been deleted successfully");
+      res.json({
+        status: 200,
+        message: "The teacher account has been deleted successfully",
+      });
     }
   } catch (error) {
-    res.status(501).send({ status: "some error has occured" });
+    res.json({ status: 500, message: error });
   }
-})
+});
 // Get chat history between parent and teacher
-Router.get('/messages/:senderId/:receiverId', async (req, res) => {
+Router.get("/messages/:senderId/:receiverId", async (req, res) => {
   const { senderId, receiverId } = req.params;
-  const messages = await message.find({
-    $or: [
-      { sender: senderId, receiver: receiverId },
-      { sender: receiverId, receiver: senderId },
-    ],
-  }).sort({ timestamp: 1 });
+  const messages = await message
+    .find({
+      $or: [
+        { sender: senderId, receiver: receiverId },
+        { sender: receiverId, receiver: senderId },
+      ],
+    })
+    .sort({ timestamp: 1 });
 
   res.json(messages);
 });
