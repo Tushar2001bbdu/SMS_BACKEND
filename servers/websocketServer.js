@@ -9,12 +9,29 @@ function initializeWebSocket(server) {
       credentials: true,
     },
   });
-
+  const clients = new Set();
   const userSocketMap = {};
+  
 
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
-
+    socket.on("start-group-chat",(socket)=>{
+      console.log("Group chat started with ", socket.id);
+      clients.add(socket.id);
+      socket.on("message", (message) => {
+        console.log("Received message from group chat:", message);
+    clients.forEach((client) => {
+      if (client !== ws && client.readyState === WebSocket.OPEN) {
+         socket.to(client).emit("message", message);
+      }
+  })
+      });
+      socket.on("disconnect", () => {
+        console.log("Client disconnected");
+        clients.delete(socket.id);
+      });
+    });
+  
     socket.on("register", (userId) => {
       userSocketMap[userId] = socket.id;
       console.log(`User ${userId} is registered with socket ID: ${socket.id}`);
@@ -48,7 +65,6 @@ function initializeWebSocket(server) {
     socket.on("end-chat", () => {
       console.log("Client disconnected");
     });
-  });
-}
+  });}
 
 module.exports = { initializeWebSocket };

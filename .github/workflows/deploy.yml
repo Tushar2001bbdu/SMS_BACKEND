@@ -50,16 +50,16 @@ jobs:
       # Step 8: Tag Docker image
       - name: Tag Docker image for ECR
         run: |
-          docker tag my-lambda-image:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repo:latest
+          docker tag my-lambda-image:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
 
       # Step 9: Push Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repo:latest
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
 
       # Step 10: Create or update Lambda function with Docker image
       - name: Deploy Lambda function
         run: |
           aws lambda update-function-code --function-name deployment-function \
-            --image-uri ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repo:latest \
+            --image-uri ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest \
             --region ${{ secrets.REGION }}
