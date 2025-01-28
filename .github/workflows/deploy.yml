@@ -45,7 +45,7 @@ jobs:
       # Step 7: Create ECR repository if it does not exist
       - name: Create ECR repository (if not exists)
         run: |
-          aws ecr describe-repositories --repository-names my-lambda-repo || aws ecr create-repository --repository-name my-lambda-repo --region ${{ secrets.REGION }}
+          aws ecr describe-repositories --repository-names my-lambda-repository || aws ecr create-repository --repository-name my-lambda-repository --region ${{ secrets.REGION }}
 
       # Step 8: Tag Docker image
       - name: Tag Docker image for ECR
