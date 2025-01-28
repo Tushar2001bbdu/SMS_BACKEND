@@ -10,7 +10,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout code
+      # Step 1: Checkout the code
       - name: Checkout code
         uses: actions/checkout@v3
 
@@ -37,13 +37,12 @@ jobs:
           aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.REGION }}
 
-      # Step 6: Authenticate Docker to AWS ECR (with error handling)
+      # Step 6: Authenticate Docker to AWS ECR
       - name: Log in to Amazon ECR
         run: |
-          aws ecr get-login-password --region ${{ secrets.REGION }} | docker login --username AWS --password-stdin <span class="math-inline">\{\{ secrets\.AWS\_ACCOUNT\_ID \}\}\.dkr\.ecr\.</span>{{ secrets.REGION }}.amazonaws.com || echo "Failed to login to ECR. Check credentials and permissions."
-          exit 1
+          aws ecr get-login-password --region ${{ secrets.REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com
 
-      # Step 7: Create ECR repository (if not exists)
+      # Step 7: Create ECR repository if it does not exist
       - name: Create ECR repository (if not exists)
         run: |
           aws ecr describe-repositories --repository-names my-lambda-repository || aws ecr create-repository --repository-name my-lambda-repository --region ${{ secrets.REGION }}
@@ -51,16 +50,16 @@ jobs:
       # Step 8: Tag Docker image
       - name: Tag Docker image for ECR
         run: |
-          docker tag my-lambda-image:latest <span class="math-inline">\{\{ secrets\.AWS\_ACCOUNT\_ID \}\}\.dkr\.ecr\.</span>{{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
+          docker tag my-lambda-image:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
 
-      # Step 9: Push Docker image to ECR (with error handling)
+      # Step 9: Push Docker image to ECR
       - name: Push Docker image to ECR
         run: |
-          docker push <span class="math-inline">\{\{ secrets\.AWS\_ACCOUNT\_ID \}\}\.dkr\.ecr\.</span>{{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest || echo "Failed to push image to ECR. Check image name, repository, and permissions."
-          exit 1
+          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
 
       # Step 10: Create or update Lambda function with Docker image
       - name: Deploy Lambda function
         run: |
           aws lambda update-function-code --function-name deployment-function \
-            --image-uri <span class="math-inline">\{\{ secrets\.AWS\_ACCOUNT\_ID \}\}\.dkr\.ecr\.</span>{{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
+            --image-uri ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest \
+            --region ${{ secrets.REGION }}
