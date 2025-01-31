@@ -47,4 +47,28 @@ const authenticateTeacherToken = async (req, res, next) => {
     return res.status(403).json({ message: 'Invalid token' });
   }
 };
-module.exports = {authenticateStudentToken,authenticateTeacherToken};
+// Initialize Firebase Admin SDK
+const authenticateAdminToken = async (req, res, next) => {
+  // Extract the token from the Authorization header
+  const idToken = req.headers.authorization;
+  console.log(idToken)
+ console.log("i am being used")
+  if (!idToken) {
+    // If no token is provided, return unauthorized error
+    return res.status(401).json({ message: 'Unauthorized, no token provided' });
+  }
+
+  try {
+    // Verify the ID token
+    const decodedToken = await admin.app('admins').auth().verifyIdToken(idToken);
+    // Attach the decoded token (user data) to the request object
+    req.user = decodedToken;
+    // Move to the next middleware or route handler
+    next();
+  } catch (error) {
+    // If token verification fails, return forbidden error
+    console.error('Error verifying token:', error);
+    return res.status(403).json({ message: 'Invalid token' });
+  }
+};
+module.exports = {authenticateStudentToken,authenticateTeacherToken,authenticateAdminToken};

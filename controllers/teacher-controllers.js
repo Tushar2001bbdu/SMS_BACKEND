@@ -1,5 +1,5 @@
 let teacherService = require("../services/teachers");
-const { teacherCheck } = require("../utils/aurhentication");
+const { teacherCheck } = require("../utils/authentication");
 let rollno;
 
 exports.seeProfile = async (req, res) => {

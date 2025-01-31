@@ -1,5 +1,5 @@
 let studentService = require("../services/students");
-const { studentCheck } = require("../utils/aurhentication");
+const { studentCheck } = require("../utils/authentication");
 let rollno;
 
 exports.login = async (req, res) => {

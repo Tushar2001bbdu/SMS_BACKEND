@@ -1,18 +1,24 @@
 const express = require("express");
-const User = require("../models/students");
 const Results = require("../models/examresult");
 const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
 const { message } = require("../models/chatMessages");
 const { body, validationResult } = require("express-validator");
+const {login,getClassList,getStudentList,createStudentAccount,getTeacherList,getPhotoUploadUrl} = require("../controllers/management-controllers");
+const {authenticateAdminToken} = require("../middlewares/auth");
 const Teachers = require("../models/teachers");
 const bcrypt = require("bcrypt");
 const admin = require("firebase-admin");
 const users = require("../models/students");
 const teachers = require("../models/teachers");
 const Class = require("../models/classes");
-const appstudents = admin.app("students");
+
 const appteachers = admin.app("teachers");
+Router.post("/login",authenticateAdminToken,login);
+Router.get("/getClassList",authenticateAdminToken,getClassList)
+Router.get("/getStudentList/:section",authenticateAdminToken,getStudentList)
+Router.get("/getTeacherList",authenticateAdminToken,getTeacherList)
+Router.get("/get-upload-url/:filename",authenticateAdminToken,getPhotoUploadUrl)
 
 //LA-Library Availed;AF-Academic Fees;TF-Total Fees Paid;FP-Training and Placement Fees Paid
 //Route adding necessary details for a student having a account in the Student Management System
@@ -24,81 +30,16 @@ Router.post(
   [
     body("name", "Enter a valid name").isLength({ min: 3 }),
     body("password", "Enter a valid password").isLength({ min: 5 }),
+    body("profilepictureLink", "Enter a valid profile pitcure link").isURL(),
     body("section", "Enter a valid section").isLength({ min: 3 }),
     body("course", "Enter a valid course").isLength({ min: 5 }),
     body("branch", "Enter a valid branch").isLength({ min: 5 }),
-    body("teacher", "Enter a valid Teacher Name").isLength({ min: 5 }),
+    body("teacher", "Enter a valid class teacher Name").isLength({ min: 5 }),
     body("rollno", "Enter a valid Roll No").isLength({ min: 5 }),
-    body("teacherrollno", "Enter a valid Teacher Roll No").isLength({ min: 5 }),
+    body("teacherrollno", "Enter a valid class teacher Roll No").isLength({ min: 5 }),
   ],
-  async (req, res) => {
-    const errors = validationResult(req);
-
-    if (!errors.isEmpty()) {
-      console.log(errors);
-      res.status(500).send({ success: "You have entered inavlid credentials" });
-    } else {
-      try {
-        let user = User.findOne({ rollno: req.body.rollno });
-
-        if (user == true) {
-          res
-            .status(500)
-            .send({ success: "There is already an account of the user" });
-        } else {
-          const salt = await bcrypt.genSalt(10);
-          const secPass = await bcrypt.hash(req.body.password, salt);
-
-          await User.create({
-            email: req.body.email,
-            name: req.body.name,
-            password: secPass,
-            section: req.body.section,
-            course: req.body.course,
-            branch: req.body.branch,
-            classteacher: req.body.teacher,
-            rollno: req.body.rollno,
-            teacherrollno: req.body.teacherrollno,
-          });
-          await Results.create({
-            rollno: req.body.rollno,
-            name: req.body.name,
-          });
-          await Details.create({
-            rollno: req.body.rollno,
-            name: req.body.name,
-          });
-          // adding student to teacher list of students
-          let teacher = await Teachers.findOne({
-            rollno: req.body.teacherrollno,
-          }).select("studentslist");
-          teacher.studentslist.push(req.body.rollno);
-          teacher.students.push({
-            name: req.body.name,
-            rollno: req.body.rollno,
-          });
-          await teacher.save();
-          let USER = {
-            email: req.body.email,
-            password: req.body.password,
-          };
-          await admin.auth(appstudents).createUser({
-            email: USER.email,
-            password: USER.password,
-            emailVerified: false,
-            disabled: false,
-          });
-
-          res.status(201).json({
-            success: "You have successfully created an account",
-          });
-        }
-      } catch (error) {
-        console.log(error);
-        res.status(500).send("Some error has occured");
-      }
-    }
-  }
+  authenticateAdminToken,
+  createStudentAccount
 );
 //Route to create account for a teacher in the Student Management System
 Router.post(
