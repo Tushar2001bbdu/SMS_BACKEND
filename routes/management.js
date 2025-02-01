@@ -4,7 +4,7 @@ const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
 const { message } = require("../models/chatMessages");
 const { body, validationResult } = require("express-validator");
-const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherRecord } = require("../controllers/management-controllers");
+const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount } = require("../controllers/management-controllers");
 const { authenticateAdminToken } = require("../middlewares/auth");
 const users = require("../models/students");
 const teachers = require("../models/teachers");
@@ -23,8 +23,6 @@ Router.get("/get-upload-url/:filename", authenticateAdminToken, getPhotoUploadUr
 //Route for updating Academic Fees Paid for a student having a account in the Student Management System
 Router.post(
   "/createStudentRecord",
-
-
   authenticateAdminToken,
   createStudentAccount
 );
@@ -32,10 +30,7 @@ Router.post(
 Router.post(
   "/createTeacherRecord",
   authenticateAdminToken,
-  createTeacherRecord
-
-
-
+  createTeacherAccount
 );
 
 //Route to create class for a teacher in the Student Management System
