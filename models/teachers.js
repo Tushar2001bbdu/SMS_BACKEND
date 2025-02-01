@@ -6,6 +6,7 @@ const TeachersSchema = new Schema({
         type: String,
         required: true,
         unique: true,
+        lowercase:true
     },
     rollno: {
         type: String,
@@ -55,8 +56,7 @@ const TeachersSchema = new Schema({
         required:true
     },
     studentslist: {
-        type: [Number],
-        ref: "students",
+        type: [Object]
     },
 });
 

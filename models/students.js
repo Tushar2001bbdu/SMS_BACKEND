@@ -5,6 +5,7 @@ const StudentsSchema = new Schema({
     email: {
         type: String,
         required: true,
+        lowercase:true,
         unique: true
     },
     rollno: {
@@ -41,7 +42,7 @@ const StudentsSchema = new Schema({
         required: true
     },
     teacherrollno: {
-        type: Object,
+        type: [Object],
         required: true
     },
     role: {

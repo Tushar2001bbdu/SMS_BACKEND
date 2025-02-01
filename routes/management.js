@@ -4,21 +4,18 @@ const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
 const { message } = require("../models/chatMessages");
 const { body, validationResult } = require("express-validator");
-const {login,getClassList,getStudentList,createStudentAccount,getTeacherList,getPhotoUploadUrl} = require("../controllers/management-controllers");
-const {authenticateAdminToken} = require("../middlewares/auth");
-const Teachers = require("../models/teachers");
-const bcrypt = require("bcrypt");
-const admin = require("firebase-admin");
+const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherRecord } = require("../controllers/management-controllers");
+const { authenticateAdminToken } = require("../middlewares/auth");
 const users = require("../models/students");
 const teachers = require("../models/teachers");
 const Class = require("../models/classes");
 
-const appteachers = admin.app("teachers");
-Router.post("/login",authenticateAdminToken,login);
-Router.get("/getClassList",authenticateAdminToken,getClassList)
-Router.get("/getStudentList/:section",authenticateAdminToken,getStudentList)
-Router.get("/getTeacherList",authenticateAdminToken,getTeacherList)
-Router.get("/get-upload-url/:filename",authenticateAdminToken,getPhotoUploadUrl)
+
+Router.post("/login", authenticateAdminToken, login);
+Router.get("/getClassList", authenticateAdminToken, getClassList)
+Router.get("/getStudentList/:section", authenticateAdminToken, getStudentList)
+Router.get("/getTeacherList", authenticateAdminToken, getTeacherList)
+Router.get("/get-upload-url/:filename", authenticateAdminToken, getPhotoUploadUrl)
 
 //LA-Library Availed;AF-Academic Fees;TF-Total Fees Paid;FP-Training and Placement Fees Paid
 //Route adding necessary details for a student having a account in the Student Management System
@@ -27,80 +24,18 @@ Router.get("/get-upload-url/:filename",authenticateAdminToken,getPhotoUploadUrl)
 Router.post(
   "/createStudentRecord",
 
-  [
-    body("name", "Enter a valid name").isLength({ min: 3 }),
-    body("password", "Enter a valid password").isLength({ min: 5 }),
-    body("profilepictureLink", "Enter a valid profile pitcure link").isURL(),
-    body("section", "Enter a valid section").isLength({ min: 3 }),
-    body("course", "Enter a valid course").isLength({ min: 5 }),
-    body("branch", "Enter a valid branch").isLength({ min: 5 }),
-    body("teacher", "Enter a valid class teacher Name").isLength({ min: 5 }),
-    body("rollno", "Enter a valid Roll No").isLength({ min: 5 }),
-    body("teacherrollno", "Enter a valid class teacher Roll No").isLength({ min: 5 }),
-  ],
+
   authenticateAdminToken,
   createStudentAccount
 );
 //Route to create account for a teacher in the Student Management System
 Router.post(
   "/createTeacherRecord",
+  authenticateAdminToken,
+  createTeacherRecord
 
-  [
-    body("name", "Enter a valid name").isLength({ min: 3 }),
-    body("age", "Enter a valid age").notEmpty(),
-    body("password", "Enter a valid password").isLength({ min: 3 }),
-    body("course", "Enter a valid course").notEmpty(),
-    body("gender", "Enter a valid gender").notEmpty(),
-  ],
-  async (req, res) => {
-    const errors = validationResult(req);
 
-    if (!errors.isEmpty()) {
-      res
-        .status(500)
-        .send({ success: "You have entered invalid data to create a account" });
-    } else {
-      try {
-        let teacher = Teachers.findOne({ rollno: req.body.rollno });
 
-        if (teacher == true) {
-          res.status(401).send({
-            status:
-              "You have already an account on this Student Management System",
-          });
-        } else {
-          teacher = await Teachers.create({
-            email: req.body.email,
-            rollno: req.body.rollno,
-            name: req.body.name,
-            password: req.body.password,
-            course: req.body.course,
-            age: req.body.age,
-            gender: req.body.gender,
-          });
-          let USER = {
-            email: req.body.email,
-            password: req.body.password,
-          };
-          await admin.auth(appteachers).createUser({
-            email: USER.email,
-            password: USER.password,
-            emailVerified: false,
-            disabled: false,
-          });
-
-          res
-            .status(201)
-            .send(
-              "You have successfully created an account in the teachers database"
-            );
-        }
-      } catch (error) {
-        console.log(error);
-        res.status(500).send("Some error has occured");
-      }
-    }
-  }
 );
 
 //Route to create class for a teacher in the Student Management System

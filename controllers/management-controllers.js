@@ -1,5 +1,7 @@
 let { adminCheck } = require("../utils/authentication");
 let administrators = require("../services/management");
+let teachers=require("../models/teachers")
+const { body, validationResult } = require("express-validator");
 let students=require("../models/students")
 exports.login = async (req, res) => {
   try {
@@ -68,22 +70,18 @@ exports.getPhotoUploadUrl=async(req,res)=>{
   }
 }
 exports.createStudentAccount=async (req, res) => {
-  const errors = validationResult(req);
-
-  if (!errors.isEmpty()) {
-    console.log(errors);
-    res.json({ status:401,meesage: "You have entered invalid data" });
-  } else {
     try {
-      let student = students.findOne({ rollno: req.body.rollno });
-
-      if (student!==null) {
-        res.json({ status:400,meesage: "There is already an account of the user" });
+      let {email,rollno,name,password,course,section,branch,classteacherrollno,profilepictureLink}=req.body.userDetails;
+      let student = await students.findOne({ rollno: rollno });
+      let emailPresent=await students.findOne({email:email})
+      let teacher=await teachers.findOne({rollno:rollno})
+      if (student!==null || emailPresent!==null || rollno.length<10 || teacher==null) {
+        res.json({ status:400,message: "There is already an account of the user or you have entered invalid roll number for student or teacher" });
       } else {
-        let {email,name,password,profilepictureLink,section,course,branch,teacher,rollno,teacherrollno}=req.body;
-        let data=administrators.createStudentRecord(email,name,password,profilepictureLink,section,course,branch,teacher,rollno,teacherrollno)
+        let teacherrollno=teacher.name
+        let data=administrators.createStudentRecord(email,rollno,name,password,course,section,branch,classteacher,teacherrollno,profilepictureLink)
         res.json({
-          status:401,
+          status:200,
           message: "You have successfully created an account",
           data:data
         });
@@ -93,4 +91,23 @@ exports.createStudentAccount=async (req, res) => {
       res.status(500).send("Some error has occured");
     }
   }
-}
+  exports.createTeacherAccount=async (req, res) => {
+    try {
+      let {email,rollno,name,password,course,age,gender,profilepictureLink}=req.body.userDetails;
+      let teacher = await taechers.findOne({ rollno: rollno });
+      let emailPresent=await teacher.findOne({email:email})
+      if (teacher!==null || emailPresent!==null || rollno.length<10) {
+        res.json({ status:400,message: "There is already an account of the user or you have entered invalid roll number for teacher" });
+      } else {
+        let data=administrators.createTeacherRecord(email,rollno,name,password,course,age,gender,profilepictureLink)
+        res.json({
+          status:200,
+          message: "You have successfully created an account",
+          data:data
+        });
+      }
+    } catch (error) {
+      console.log(error);
+      res.json({status:500,message:error});
+    }
+  }
