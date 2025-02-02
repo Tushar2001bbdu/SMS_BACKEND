@@ -55,7 +55,7 @@ const StudentsSchema = new Schema({
     },
     profilepictureLink:{
         type: String,
-        default: 'https://via.placeholder.com/150' // Default profile picture URL
+        default: 'https://via.placeholder.com/150'
     }
 });
 

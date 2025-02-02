@@ -19,14 +19,14 @@ const classSchema = new mongoose.Schema({
   },
   teacher: [
     {
-      type: String,
+      type: [String],
       required: true,
     }
 
   ],
   students: [
     {
-      type: String
+      type: [String]
 
     },
   ],
@@ -38,16 +38,16 @@ const classSchema = new mongoose.Schema({
   ],
   schedule: [
     {
-    day: {
-      type: String,
-      enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
-    },
-    time: {
-      start: { type: String },
-      end: { type: String },
-      subject:{type: String, required: true}
-    },
-  }
+      day: {
+        type: String,
+        enum: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'],
+      },
+      time: {
+        start: { type: String },
+        end: { type: String },
+        subject: { type: String, required: true }
+      },
+    }
   ],
   room: {
     type: String,

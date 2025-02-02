@@ -1,13 +1,12 @@
 const express = require("express");
-const Results = require("../models/examresult");
+
 const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
 const { message } = require("../models/chatMessages");
 const { body, validationResult } = require("express-validator");
-const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount } = require("../controllers/management-controllers");
+const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount ,deleteStudentAccount,deleteTeacherAccount} = require("../controllers/management-controllers");
 const { authenticateAdminToken } = require("../middlewares/auth");
-const users = require("../models/students");
-const teachers = require("../models/teachers");
+
 const Class = require("../models/classes");
 
 
@@ -38,7 +37,7 @@ Router.post(
   "/createClass",
   [
     body("name", "Class name should be at least 3 characters long").isLength({
-      min: 3,
+      min: 5,
     }),
     body("code", "Class code must be provided").notEmpty(),
     body("teachers", "A valid teacher ID must be provided").notEmpty(),
@@ -258,46 +257,8 @@ Router.patch("/changeLibraryAvailed", async (req, res) => {
   }
 });
 
-Router.delete("/deleteStudent", async (req, res) => {
-  try {
-    let user = await Details.findOne({ rollno: req.body.rollno });
-    if (user === null) {
-      res.json({
-        status: 401,
-        message: "You have not created the student Details account",
-      });
-    } else {
-      await Details.findOneAndDelete({ rollno: req.body.rollno });
-      await Results.findOneAndDelete({ rollno: req.body.rollno });
-      await users.findOneAndDelete({ rollno: req.body.rollno });
-
-      res.json({
-        status: 200,
-        message: "The student account has been deleted successfully",
-      });
-    }
-  } catch (error) {
-    console.log(error);
-    res.json({ status: 501, message: "some error has occured" });
-  }
-});
-Router.delete("/deleteTeacher", async (req, res) => {
-  try {
-    let user = await teachers.findOne({ rollno: req.body.rollno });
-    if (user === null) {
-      res.status(401).send("You have not created the  teachers account yet");
-    } else {
-      await teachers.findOneAndDelete({ rollno: req.body.rollno });
-
-      res.json({
-        status: 200,
-        message: "The teacher account has been deleted successfully",
-      });
-    }
-  } catch (error) {
-    res.json({ status: 500, message: error });
-  }
-});
+Router.delete("/deleteStudentRecord/:rollno/:section",authenticateAdminToken,deleteStudentAccount);
+Router.delete("/deleteTeacherRecord/:rollno",authenticateAdminToken,deleteTeacherAccount); 
 // Get chat history between parent and teacher
 Router.get("/messages/:senderId/:receiverId", async (req, res) => {
   const { senderId, receiverId } = req.params;

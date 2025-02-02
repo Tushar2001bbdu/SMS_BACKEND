@@ -39,7 +39,7 @@ const TeachersSchema = new Schema({
     },
     role: {
         type: String,
-        default: 'teacher', // Automatically set to 'teacher'
+        default: 'teacher',
     },
     attendance: {
         value: {
@@ -53,11 +53,14 @@ const TeachersSchema = new Schema({
     },
     allotedSections:{
         type:[String],
-        required:true
     },
     studentslist: {
         type: [Object]
     },
+    profilepictureLink:{
+        type: String,
+        default: 'https://via.placeholder.com/150'
+    }
 });
 
 module.exports = mongoose.model("Teachers", TeachersSchema);
