@@ -132,7 +132,28 @@ class administrators {
 
     }
   }
+  static async editTeacherRecord(rollno, name, course, age, gender, profilepictureLink) {
+    try {
 
+      let teacher = await teachers.findOneAndUpdate({ rollno: rollno, course: course }, {
+        "$set": {
+
+          name: name,
+
+          age: age,
+          gender: gender,
+          profilepictureLink: profilepictureLink
+        }
+      });
+
+
+      return teacher;
+
+    } catch (error) {
+      throw error;
+
+    }
+  }
   static async generatePresignedUrl(bucketName, key) {
     const command = new PutObjectCommand({
       Bucket: bucketName,

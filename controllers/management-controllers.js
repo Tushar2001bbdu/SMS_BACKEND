@@ -174,3 +174,23 @@ exports.deleteTeacherAccount=async (req, res) => {
     res.json({ status: 500, message: error });
   }
 };
+exports.editTeacherAccount = async (req, res) => {
+  try {
+    let { email, rollno, name, course, age, gender, profilepictureLink } = req.body.userDetails;
+    let teacher = await teachers.findOne({ rollno: rollno });
+    let emailPresent = await teachers.findOne({ email: email })
+    if (teacher === null || emailPresent === null || rollno.length < 10) {
+      res.json({ status: 400, message: "There is no account of the user or you have entered invalid roll number for teacher" });
+    } else {
+      let data = await administrators.editTeacherRecord(email, rollno, name, course, age, gender, profilepictureLink)
+      res.json({
+        status: 200,
+        message: "You have successfully edited an account",
+        data: data
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.json({ status: 500, message: error });
+  }
+}

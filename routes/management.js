@@ -4,7 +4,7 @@ const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
 const { message } = require("../models/chatMessages");
 const { body, validationResult } = require("express-validator");
-const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount ,deleteStudentAccount,deleteTeacherAccount} = require("../controllers/management-controllers");
+const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount, deleteStudentAccount, deleteTeacherAccount, editTeacherAccount } = require("../controllers/management-controllers");
 const { authenticateAdminToken } = require("../middlewares/auth");
 
 const Class = require("../models/classes");
@@ -31,7 +31,11 @@ Router.post(
   authenticateAdminToken,
   createTeacherAccount
 );
-
+Router.patch(
+  "/ediTeacherRecord/:userDetails",
+  authenticateAdminToken,
+  editTeacherAccount
+)
 //Route to create class for a teacher in the Student Management System
 Router.post(
   "/createClass",
@@ -257,8 +261,8 @@ Router.patch("/changeLibraryAvailed", async (req, res) => {
   }
 });
 
-Router.delete("/deleteStudentRecord/:rollno/:section",authenticateAdminToken,deleteStudentAccount);
-Router.delete("/deleteTeacherRecord/:rollno",authenticateAdminToken,deleteTeacherAccount); 
+Router.delete("/deleteStudentRecord/:rollno/:section", authenticateAdminToken, deleteStudentAccount);
+Router.delete("/deleteTeacherRecord/:rollno", authenticateAdminToken, deleteTeacherAccount);
 // Get chat history between parent and teacher
 Router.get("/messages/:senderId/:receiverId", async (req, res) => {
   const { senderId, receiverId } = req.params;

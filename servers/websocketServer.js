@@ -1,5 +1,7 @@
 const SOCKETIO = require("socket.io");
 const { message } = require("../models/chatMessages");
+const { groupMessage } = require("../models/groupMessages");
+
 
 function initializeWebSocket(server) {
   const io = SOCKETIO(server, {
@@ -11,7 +13,25 @@ function initializeWebSocket(server) {
   });
   const clients = new Set();
   const userSocketMap = {};
+  const groupChat = io.of('/group-chat');
+  groupChat.on('start-connection', socket => {
+    console.log(`New Memmber connected: ${socket.user.id}`);
   
+    socket.on('join-group', ({ groupId }) => {
+      socket.join(groupId);
+      console.log(`User joined group: ${groupId}`);
+    });
+  
+    socket.on('send-message', async ({ groupId, message }) => {
+      const newMessage = new Message({ sender: socket.user.id, group: groupId, content: message });
+      await newMessage.save();
+      groupChat.to(groupId).emit('new-message', { groupId, message });
+    });
+  
+    socket.on('disconnect', () => {
+      console.log('User disconnected');
+    });
+  });
 
   io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
@@ -48,19 +68,7 @@ function initializeWebSocket(server) {
       }
     });
 
-    socket.on("join-room", (data) => {
-      console.log(`User ${data.peerId} joined room ${data.roomId}`);
-      socket.join(data.roomId);
-      socket.peerId = data.peerId; 
-
-      socket.broadcast.to(data.roomId).emit("user-connected", data.peerId);
-
-      socket.on("disconnect", () => {
-        console.log(`User ${socket.peerId} disconnected`);
-        socket.to(data.roomId).emit("user-disconnected", socket.peerId);
-        delete userSocketMap[socket.peerId];
-      });
-    });
+   
 
     socket.on("end-chat", () => {
       console.log("Client disconnected");

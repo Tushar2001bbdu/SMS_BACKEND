@@ -53,6 +53,10 @@ const StudentsSchema = new Schema({
         type: Date,
         default: Date.now
     },
+    lastOnline:{
+        type: Date,
+        default: Date.now
+    },
     profilepictureLink:{
         type: String,
         default: 'https://via.placeholder.com/150'
