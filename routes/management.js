@@ -2,10 +2,11 @@ const express = require("express");
 
 const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
-const { message } = require("../models/chatMessages");
+
 const { body, validationResult } = require("express-validator");
-const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount, deleteStudentAccount, deleteTeacherAccount, editTeacherAccount } = require("../controllers/management-controllers");
+const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount, deleteStudentAccount, deleteTeacherAccount, editTeacherAccount, getClassGroupMessages, getPrivateChatMessages } = require("../controllers/management-controllers");
 const { authenticateAdminToken } = require("../middlewares/auth");
+
 
 const Class = require("../models/classes");
 
@@ -264,17 +265,6 @@ Router.patch("/changeLibraryAvailed", async (req, res) => {
 Router.delete("/deleteStudentRecord/:rollno/:section", authenticateAdminToken, deleteStudentAccount);
 Router.delete("/deleteTeacherRecord/:rollno", authenticateAdminToken, deleteTeacherAccount);
 // Get chat history between parent and teacher
-Router.get("/messages/:senderId/:receiverId", async (req, res) => {
-  const { senderId, receiverId } = req.params;
-  const messages = await message
-    .find({
-      $or: [
-        { sender: senderId, receiver: receiverId },
-        { sender: receiverId, receiver: senderId },
-      ],
-    })
-    .sort({ timestamp: 1 });
-
-  res.json(messages);
-});
+Router.get("/messages/:senderId/:receiverId", getPrivateChatMessages);
+Router.get("/groupMessages/:groupId", getClassGroupMessages);
 module.exports = Router;

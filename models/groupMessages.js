@@ -1,8 +1,8 @@
 const mongoose = require('mongoose');
 
 const MessageSchema = new mongoose.Schema({
-  sender: { type: String,required: true },
-  group: { type: mongoose.Schema.Types.ObjectId, ref: 'Group', required: true },
+  sender: { type: Object, required: true },
+  group: { type: String, required: true},
   content: { type: String },
   type: { type: String, enum: ['text', 'image', 'video', 'file'], default: 'text' },
   mediaUrl: { type: String }, 

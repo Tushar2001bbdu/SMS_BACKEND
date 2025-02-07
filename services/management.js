@@ -3,6 +3,7 @@ let students = require("../models/students")
 let teachers = require("../models/teachers")
 let studentResults = require("../models/examresult")
 let studentDetails = require("../models/feespaymentdetails")
+let classGroups=require("../models/classGroups")
 const { s3Client } = require("../config/s3Client");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
@@ -67,8 +68,7 @@ class administrators {
         rollno: rollno,
         name: name,
       });
-      console.log("the teacher rollno is" + teacherrollno)
-      let dat = await teachers.findOneAndUpdate({
+      await teachers.findOneAndUpdate({
         rollno: teacherrollno,
       },
         {
@@ -79,7 +79,18 @@ class administrators {
             }
           }
         })
-      console.log(dat)
+        await classGroups.findOneAndUpdate({
+          name: section,
+        },
+          {
+            "$addToSet": {
+              members: {
+                name: name,
+                rollno: rollno,
+              }
+            }
+          })
+
 
 
       let USER = {
@@ -95,6 +106,7 @@ class administrators {
       return data;
     }
     catch (error) {
+      console.log(error)
       throw error;
     }
   }

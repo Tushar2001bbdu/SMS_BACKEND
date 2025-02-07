@@ -41,7 +41,6 @@ class StudentService {
   static async getStudentFeesDetails(rollno) {    
     try {
       let fees = await feesdetails.findOne({ rollno: rollno });
-      console.log(fees)
       return fees;
     } catch (error) {
       console.log(error)

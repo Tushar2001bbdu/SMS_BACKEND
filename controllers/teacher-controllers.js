@@ -17,7 +17,7 @@ exports.seeProfile = async (req, res) => {
   }
 };
 exports.login = async (req, res) => {
-  rollno = req.body.userDetails.rollNo;
+  rollno = req.body.userDetails.rollno;
   
   try {
   if(await teacherCheck(req.body.userDetails.email,rollno)){

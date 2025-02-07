@@ -6,6 +6,9 @@ let studentDetails = require("../models/feespaymentdetails")
 let classes = require("../models/classes")
 let assignments=require("../models/assignments")
 let students = require("../models/students")
+let {groupMessage}=require("../models/groupMessages")
+let {decryptMessage}=require("../utils/chatsecurity")
+const { message } = require("../models/chatMessages");
 exports.login = async (req, res) => {
   try {
     rollno = req.body.userDetails.rollNo;
@@ -76,13 +79,15 @@ exports.createStudentAccount = async (req, res) => {
   try {
     let { email, rollno, name, password, course, section, branch, classteacherrollno, profilepictureLink } = req.body.userDetails;
     let student = await students.findOne({ rollno: rollno });
+    
     let emailPresent = await students.findOne({ email: email })
-    let teacher = await teachers.findOne({ rollno: rollno })
-    if (student !== null || emailPresent !== null || rollno.length < 10 || teacher == null) {
+    let teacher = await teachers.findOne({ rollno: classteacherrollno })
+    console.log(student,emailPresent,teacher)
+    if (student !== null || emailPresent !== null || rollno.length !== 10 || teacher == null) {
       res.json({ status: 400, message: "There is already an account of the user or you have entered invalid roll number for student or teacher" });
     } else {
-      let teacherrollno = teacher.name
-      let data = administrators.createStudentRecord(email, rollno, name, password, course, section, branch, classteacher, teacherrollno, profilepictureLink)
+      let classteacher = teacher.name
+      let data = administrators.createStudentRecord(email, rollno, name, password, course, section, branch, classteacher, classteacherrollno, profilepictureLink)
       res.json({
         status: 200,
         message: "You have successfully created an account",
@@ -91,7 +96,7 @@ exports.createStudentAccount = async (req, res) => {
     }
   } catch (error) {
     console.log(error);
-    res.status(500).send("Some error has occured");
+    res.json({status:500 ,meesage:error});
   }
 }
 exports.createTeacherAccount = async (req, res) => {
@@ -99,7 +104,7 @@ exports.createTeacherAccount = async (req, res) => {
     let { email, rollno, name, password, course, age, gender, profilepictureLink } = req.body.userDetails;
     let teacher = await teachers.findOne({ rollno: rollno });
     let emailPresent = await teachers.findOne({ email: email })
-    if (teacher !== null || emailPresent !== null || rollno.length < 10) {
+    if (teacher !== null || emailPresent !== null || rollno.length !== 10) {
       res.json({ status: 400, message: "There is already an account of the user or you have entered invalid roll number for teacher" });
     } else {
       let data = await administrators.createTeacherRecord(email, rollno, name, password, course, age, gender, profilepictureLink)
@@ -193,4 +198,38 @@ exports.editTeacherAccount = async (req, res) => {
     console.log(error);
     res.json({ status: 500, message: error });
   }
+}
+exports.getClassGroupMessages=async(req,res)=>{
+  try{
+    let classGroupMessages=await groupMessage.find({group:req.params.groupId})
+    classGroupMessages.forEach((message)=>{
+      message.content = decryptMessage(message.content)
+      message.mediaUrl= decryptMessage(message.mediaUrl)
+    })
+    res.json({status:200,data:classGroupMessages})
+  }catch(error){
+    console.log(error)
+    res.json({status:500,message:error})
+  }
+}
+exports.getPrivateChatMessages=async(req,res)=>{
+  try{
+  const { senderId, receiverId } = req.params;
+  const messages = await message
+    .find({
+      $or: [
+        { sender: senderId, receiver: receiverId },
+        { sender: receiverId, receiver: senderId },
+      ],
+    })
+    .sort({ timestamp: 1 });
+    messages.forEach((message)=>{
+      message.content = decryptMessage(message.content)
+    })
+  res.json({status:200,data:messages});
+  }catch(error){
+    console.log(error)
+    res.json({status:500,message:error})
+  
+}
 }

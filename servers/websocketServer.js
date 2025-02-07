@@ -1,7 +1,7 @@
 const SOCKETIO = require("socket.io");
 const { message } = require("../models/chatMessages");
 const { groupMessage } = require("../models/groupMessages");
-
+const { encryptMessage } = require("../utils/chatsecurity.js");
 
 function initializeWebSocket(server) {
   const io = SOCKETIO(server, {
@@ -11,55 +11,43 @@ function initializeWebSocket(server) {
       credentials: true,
     },
   });
-  const clients = new Set();
   const userSocketMap = {};
   const groupChat = io.of('/group-chat');
-  groupChat.on('start-connection', socket => {
-    console.log(`New Memmber connected: ${socket.user.id}`);
-  
+  groupChat.on('connection', socket => {
+    console.log(`New Memmber connected: ${socket.id}`);
+
     socket.on('join-group', ({ groupId }) => {
+      console.log(groupId)
       socket.join(groupId);
       console.log(`User joined group: ${groupId}`);
     });
-  
-    socket.on('send-message', async ({ groupId, message }) => {
-      const newMessage = new Message({ sender: socket.user.id, group: groupId, content: message });
+
+    socket.on('send-message', async ({ message }) => {
+      let groupId = message.receiver;
+      console.log(groupId)
+      const newMessage = new groupMessage({ sender: message.sender, group: message.receiver, content: encryptMessage(message.content), mediaUrl: message.mediaUrl === null ? "" : encryptMessage(message.mediaUrl) });
       await newMessage.save();
-      groupChat.to(groupId).emit('new-message', { groupId, message });
+      console.log(newMessage)
+      groupChat.to(groupId).emit('new-message', { message });
     });
-  
+
     socket.on('disconnect', () => {
       console.log('User disconnected');
     });
   });
-
-  io.on("connection", (socket) => {
+  const privateChat = io.of('/private-chat');
+  privateChat.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
-    socket.on("start-group-chat",(socket)=>{
-      console.log("Group chat started with ", socket.id);
-      clients.add(socket.id);
-      socket.on("message", (message) => {
-        console.log("Received message from group chat:", message);
-    clients.forEach((client) => {
-      if (client !== ws && client.readyState === WebSocket.OPEN) {
-         socket.to(client).emit("message", message);
-      }
-  })
-      });
-      socket.on("disconnect", () => {
-        console.log("Client disconnected");
-        clients.delete(socket.id);
-      });
-    });
-  
+
     socket.on("register", (userId) => {
       userSocketMap[userId] = socket.id;
       console.log(`User ${userId} is registered with socket ID: ${socket.id}`);
     });
     socket.on("send_message", async (messageData) => {
-      const newMessage = new message(messageData);
+      let {sender,receiver,content,timestamp}=messageData;
+      const newMessage = new message({sender:sender,receiver:receiver,content:encryptMessage(content),timestamp:timestamp});
       await newMessage.save();
-      
+
       const receiverSocketId = userSocketMap[messageData.receiver];
       if (receiverSocketId) {
         socket.to(receiverSocketId).emit("receive_message", messageData);
@@ -68,11 +56,12 @@ function initializeWebSocket(server) {
       }
     });
 
-   
+
 
     socket.on("end-chat", () => {
       console.log("Client disconnected");
     });
-  });}
+  });
+}
 
 module.exports = { initializeWebSocket };
