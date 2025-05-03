@@ -10,7 +10,6 @@ const classSchema = new mongoose.Schema({
     type: String,
     required: true,
     unique: true,
-    uppercase: true,
   },
   description: {
     type: String,
@@ -20,7 +19,6 @@ const classSchema = new mongoose.Schema({
   teacher: [
     {
       type: [String],
-      required: true,
     }
 
   ],
@@ -33,7 +31,6 @@ const classSchema = new mongoose.Schema({
   courses: [
     {
       type: String,
-      required: true
     }
   ],
   schedule: [

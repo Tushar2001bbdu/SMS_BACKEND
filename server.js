@@ -83,8 +83,7 @@ const graphqlServer = require("./servers/graphqlserver");
 // PeerJS Server
 const peerPort = 3002;
 const peerServerInstance = http.createServer();
-const peerServer = ExpressPeerServer(peerServerInstance, { debug: true, path: '/peerjs' });
-app.use('/peerjs', peerServer);
+
 
 // Initialize Servers
 const mainServer = http.createServer(app);
@@ -97,9 +96,7 @@ const port = process.env.PORT || 3001;
 graphqlServer();
 
 // Start PeerJS Server
-peerServerInstance.listen(peerPort, () => {
-  console.log(`PeerJS Server listening on port ${peerPort}`);
-});
+
 
 // Start Express Server
 mainServer.listen(port, () => {

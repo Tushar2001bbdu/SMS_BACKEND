@@ -6,7 +6,7 @@ class TeacherService {
   static async seeDetails(rollno) {
     try {
       let teacher = await Teachers.findOne({ "rollno":rollno })
-
+      console.log(teacher)
       return teacher;
     } catch(error) {
       throw error;
@@ -60,6 +60,7 @@ class TeacherService {
   static async getStudentList(section) {
     try {
       let student = await students.find({ "section": section });
+      console.log(student)
       return student;
     } catch (error) {
       throw error;

@@ -35,30 +35,9 @@ Router.post(
 //Route to create class for a teacher in the Student Management System
 Router.post(
   "/createClass",
-  [
-    body("name", "Class name should be at least 3 characters long").isLength({
-      min: 5,
-    }),
-    body("code", "Class code must be provided").notEmpty(),
-    body("teachers", "A valid teacher ID must be provided").notEmpty(),
-    body("room", 'Room name or "Online" must be specified').notEmpty(),
-    body("schedule.day", "Day must be a valid weekday").isIn([
-      "Monday",
-      "Tuesday",
-      "Wednesday",
-      "Thursday",
-      "Friday",
-      "Saturday",
-      "Sunday",
-    ]),
-    body("schedule.time.start", "Start time must be in HH:mm format").matches(
-      /^([01]\d|2[0-3]):([0-5]\d)$/
-    ),
-    body("schedule.time.end", "End time must be in HH:mm format").matches(
-      /^([01]\d|2[0-3]):([0-5]\d)$/
-    ),
-  ],
+ 
   async (req, res) => {
+    console.log(req.body.className)
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
@@ -70,8 +49,8 @@ Router.post(
     }
 
     try {
-      const { name, code, teachers, room, schedule } = req.body;
-      const existingClass = await Class.findOne({ code });
+      const { className} = req.body;
+      const existingClass = await Class.findOne({ name:className });
       if (existingClass) {
         return res.status(409).json({
           status: 409,
@@ -79,13 +58,10 @@ Router.post(
         });
       }
       const newClass = await Class.create({
-        name,
-        code,
-        teachers,
-        room,
-        schedule,
+        name:className,
+        code:className
       });
-
+      console.log(newClass)
       res.json({
         status: 200,
         message: "Class created successfully",
