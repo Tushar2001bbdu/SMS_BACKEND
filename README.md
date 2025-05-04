@@ -1,93 +1,174 @@
-# Student Management System Backend
+Student Management System Backend
+A robust and scalable backend system designed to streamline educational administration and enhance student learning experiences. This project integrates modern technologies to manage student and teacher records, facilitate learning materials distribution, automate attendance tracking, and ensure secure examinations.
 
-## Features
+🚀 Features
+🔐 Authentication & Authorization
+Student Authentication: Utilizes Firebase Authentication for secure student login.
 
-### 1. Management Features
-- **Create and Edit Records**: Management can create and edit records for both teachers and students.
-- **Authentication**: Firebase Authentication is used for student login, while teachers have separate authentication.
+Teacher Authentication: Implements custom authentication mechanisms for teachers.
 
-### 2. Profile and Academic Information
-- **Profile Access**: Teachers and students can view their profiles.
-- **Fee Details**: Students can view their fee details.
-- **Results**: Students can access their academic results.
+👥 User Management
+CRUD Operations: Create, read, update, and delete records for students and teachers.
 
-### 3. Learning Materials and Assignments
-- **Material Distribution**: Teachers can efficiently send learning materials and assignments to their students using GraphQL.
-- **Assignment Checking**: Student assignments are automatically checked using ChatGPT APIs.
+Profile Access: Both students and teachers can access and manage their profiles.
 
-### 4. Attendance and Examination
-- **Automatic Attendance**: Attendance is automatically tracked using AWS Rekognition.
-- **Examination Proctoring**: AWS Rekognition is used for examination proctoring to ensure exam integrity.
+📚 Learning Materials & Assignments
+Material Distribution: Teachers can distribute learning materials via GraphQL APIs.
 
-## Tools and Technologies
+Assignment Management: Students can submit assignments, which are auto-evaluated using OpenAI's ChatGPT APIs.
 
-- **Firebase**: Used for authentication and real-time database.
-- **Node.js**: Backend framework.
-- **MongoDB**: Used as the database.
-- **OpenAI APIs**: Used for automatic assignment checking.
-- **AWS Rekognition**: Used for automatic attendance and examination proctoring.
-- **AWS Textract**: Used for document analysis.
-- **AWS Lambda**: Used for serverless deployment.
-- **AWS ECR**: Used for containerized deployment.
-- **GitHub Actions**: Used for CI/CD and deploying the backend.
+📊 Academic Information
+Fee Details: Students can view their fee payment history and pending dues.
 
-## Setup and Deployment
+Results: Access to academic results and performance metrics.
 
-### Prerequisites
-- Node.js installed
-- Firebase account and project setup
-- AWS account with Rekognition, Textract, Lambda, and ECR services enabled
-- OpenAI API key
+📆 Attendance & Examination
+Automated Attendance: Leverages AWS Rekognition for facial recognition-based attendance tracking.
 
-### Installation
+Examination Proctoring: Ensures exam integrity using AWS Rekognition for real-time monitoring.
 
-1. Clone the repository:
-   ```bash
-   git clone https://github.com/Tushar2001bbdu/SMS_BACKEND
-   ```
+🛠️ Tech Stack
+Backend Framework: Node.js with Express.js
 
-   2. Install dependencies:
-   ```bash
-   npm install
-   ```
+Database: MongoDB
 
-4. Set up environment variables:
-   - Create a `.env` file in the root directory.
-   - Add the following environment variables:
-     ```env
-     FIREBASE_API_KEY=<your-firebase-api-key>
-     FIREBASE_AUTH_DOMAIN=<your-firebase-auth-domain>
-     FIREBASE_PROJECT_ID=<your-firebase-project-id>
-     AWS_ACCESS_KEY_ID=<your-aws-access-key-id>
-     AWS_SECRET_ACCESS_KEY=<your-aws-secret-access-key>
-     OPENAI_API_KEY=<your-openai-api-key>
-     ```
+Authentication: Firebase Authentication, Custom JWT-based authentication
 
-### Running the Application
+GraphQL Server: Apollo Server
 
-1. Start the development server:
-   ```bash
-   npm run start
-   ```
+Cloud Services:
 
-2. The backend will be available at `http://localhost:3001`.
+AWS Rekognition & Textract: For facial recognition and document analysis
 
-### Deployment
+AWS Lambda & ECR: For serverless functions and containerized deployments
 
-- The backend is deployed using AWS Lambda and AWS ECR for containerized deployments. GitHub Actions are used to automate the deployment process. Each push to the `main` branch triggers a deployment workflow.
+AI Integration: OpenAI's ChatGPT API for assignment evaluation
 
-## Contributing
+CI/CD: GitHub Actions for automated testing and deployment
 
-1. Fork the repository.
-2. Create a new branch for your feature or bugfix.
-3. Commit your changes and push to your branch.
-4. Open a pull request to the `main` branch.
+Containerization: Docker & Docker Compose
 
-## License
+📁 Project Structure
+bash
+Copy
+Edit
+├── config/                 # Configuration files
+├── controllers/            # Route controllers
+├── graphql/                # GraphQL schema and resolvers
+├── middlewares/            # Custom middleware functions
+├── models/                 # Mongoose models
+├── routes/                 # Express routes
+├── servers/                # Server initialization scripts
+├── services/               # External service integrations
+├── utils/                  # Utility functions
+├── .github/workflows/      # GitHub Actions workflows
+├── .vscode/                # VSCode settings
+├── Dockerfile              # Docker configuration
+├── docker-compose.yml      # Docker Compose configuration
+├── package.json            # Project metadata and dependencies
+├── server.js               # Entry point of the application
+└── README.md               # Project documentation
+⚙️ Setup & Installation
+Clone the Repository:
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+bash
+Copy
+Edit
+git clone https://github.com/Tushar2001bbdu/SMS_BACKEND.git
+cd SMS_BACKEND
+Install Dependencies:
 
-## Contact
+bash
+Copy
+Edit
+npm install
+Configure Environment Variables:
+Create a .env file in the root directory and add the necessary environment variables:
 
-For any questions or support, please contact tusharkumargupta032@gmail.com.
+env
+Copy
+Edit
+PORT=3001
+MONGODB_URI=your_mongodb_connection_string
+FIREBASE_CONFIG=your_firebase_config
+AWS_ACCESS_KEY_ID=your_aws_access_key
+AWS_SECRET_ACCESS_KEY=your_aws_secret_key
+OPENAI_API_KEY=your_openai_api_key
+Run the Application:
 
+bash
+Copy
+Edit
+npm start
+The server will start on http://localhost:3001.
+
+🧪 Running Tests
+To run tests, use the following command:
+
+bash
+Copy
+Edit
+npm test
+📦 Deployment
+The application is containerized using Docker. To build and run the Docker container:
+
+bash
+Copy
+Edit
+docker-compose up --build
+For serverless deployment using AWS Lambda and ECR:
+
+Build Docker Image:
+
+bash
+Copy
+Edit
+docker build -t sms_backend .
+Push to AWS ECR:
+
+bash
+Copy
+Edit
+aws ecr create-repository --repository-name sms_backend
+aws ecr get-login-password | docker login --username AWS --password-stdin your_aws_account_id.dkr.ecr.region.amazonaws.com
+docker tag sms_backend:latest your_aws_account_id.dkr.ecr.region.amazonaws.com/sms_backend:latest
+docker push your_aws_account_id.dkr.ecr.region.amazonaws.com/sms_backend:latest
+Deploy with Serverless Framework:
+Ensure you have the Serverless Framework installed and configured.
+
+bash
+Copy
+Edit
+serverless deploy
+🤝 Contributing
+Contributions are welcome! Please follow these steps:
+
+Fork the repository.
+
+Create a new branch:
+
+bash
+Copy
+Edit
+git checkout -b feature/your-feature-name
+Commit your changes:
+
+bash
+Copy
+Edit
+git commit -m 'Add your feature'
+Push to the branch:
+
+bash
+Copy
+Edit
+git push origin feature/your-feature-name
+Open a pull request.
+
+Please ensure your code adheres to the project's coding standards and includes appropriate tests.
+
+📄 License
+This project is licensed under the MIT License. See the LICENSE file for details.
+
+📬 Contact
+For any inquiries or feedback, please contact Tushar Gupta
