@@ -1,65 +1,28 @@
-name: Deploy to AWS Lambda
+name: Deploy to EC2
 
 on:
   push:
     branches:
-      - main  # Deploy on push to the main branch
+      - main
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Checkout the code
-      - name: Checkout code
-        uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
 
-      # Step 2: Set up Node.js
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
+    - name: Setup SSH
+      uses: webfactory/ssh-agent@v0.7.0
+      with:
+        ssh-private-key: ${{ secrets.EC2_SSH_KEY }}
 
-      # Step 3: Install dependencies
-      - name: Install dependencies
-        run: npm install
-
-      # Step 4: Build Docker image for Lambda
-      - name: Build Docker image
-        run: |
-          docker build -t my-lambda-image .
-
-      # Step 5: Set up AWS CLI with credentials
-      - name: Set up AWS credentials
-        uses: aws-actions/configure-aws-credentials@v3
-        with:
-          aws-access-key-id: ${{ secrets.ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.SECRET_ACCESS_KEY }}
-          aws-region: ${{ secrets.REGION }}
-
-      # Step 6: Authenticate Docker to AWS ECR
-      - name: Log in to Amazon ECR
-        run: |
-          aws ecr get-login-password --region ${{ secrets.REGION }} | docker login --username AWS --password-stdin ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com
-
-      # Step 7: Create ECR repository if it does not exist
-      - name: Create ECR repository (if not exists)
-        run: |
-          aws ecr describe-repositories --repository-names my-lambda-repository || aws ecr create-repository --repository-name my-lambda-repository --region ${{ secrets.REGION }}
-
-      # Step 8: Tag Docker image
-      - name: Tag Docker image for ECR
-        run: |
-          docker tag my-lambda-image:latest ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
-
-      # Step 9: Push Docker image to ECR
-      - name: Push Docker image to ECR
-        run: |
-          docker push ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest
-
-      # Step 10: Create or update Lambda function with Docker image
-      - name: Deploy Lambda function
-        run: |
-          aws lambda update-function-code --function-name deployment-function \
-            --image-uri ${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.${{ secrets.REGION }}.amazonaws.com/my-lambda-repository:latest \
-            --region ${{ secrets.REGION }}
+    - name: Deploy to EC2
+      run: |
+        ssh -o StrictHostKeyChecking=no ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+          cd ${{ secrets.EC2_PATH }}
+          git pull origin main
+          npm install
+          pm2 restart all
+        EOF
