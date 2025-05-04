@@ -5,7 +5,10 @@ let studentResults = require("../models/examresult")
 let studentDetails = require("../models/feespaymentdetails")
 let classes = require("../models/classes")
 let assignments=require("../models/assignments")
+let {groupMessages}=require("../models/groupMessages")
+let {decryptMessage}=require("../utils/chatSecurity")
 let students = require("../models/students")
+let message=require("../models/chatMessages")
 exports.login = async (req, res) => {
   try {
     rollno = req.body.userDetails.rollNo;
@@ -174,3 +177,37 @@ exports.deleteTeacherAccount=async (req, res) => {
     res.json({ status: 500, message: error });
   }
 };
+exports.getClassGroupMessages=async(req,res)=>{
+  try{
+    let classGroupMessages=await groupMessages.find({group:req.params.groupId})
+    classGroupMessages.forEach((message)=>{
+      message.content = decryptMessage(message.content)
+      message.mediaUrl= decryptMessage(message.mediaUrl)
+    })
+    res.json({status:200,data:classGroupMessages})
+  }catch(error){
+    console.log(error)
+    res.json({status:500,message:error})
+  }
+}
+exports.getPrivateChatMessages=async(req,res)=>{
+  try{
+  const { senderId, receiverId } = req.params;
+  const messages = await message
+    .find({
+      $or: [
+        { sender: senderId, receiver: receiverId },
+        { sender: receiverId, receiver: senderId },
+      ],
+    })
+    .sort({ timestamp: 1 });
+    messages.forEach((message)=>{
+      message.content = decryptMessage(message.content)
+    })
+  res.json({status:200,data:messages});
+  }catch(error){
+    console.log(error)
+    res.json({status:500,message:error})
+  
+}
+}

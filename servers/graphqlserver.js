@@ -1,21 +1,23 @@
-let { ApolloServer } = require('@apollo/server')
-let { startStandaloneServer } = require('@apollo/server/standalone')
+const { ApolloServer } = require('@apollo/server');
+const { expressMiddleware } = require('@apollo/server/express4');
+const express = require('express');
 
+const typeDefs = require('../graphql/schema');
+const resolvers = require('../graphql/resolvers');
 
-const startServer = async () => {
-    const typeDefs = require('../graphql/schema')
-    const resolvers = require('../graphql/resolvers')
-    const server = new ApolloServer({
-        typeDefs,
-        resolvers
-    })
-    const { url } = await startStandaloneServer(server, {
-        listen: { port: 3004 },
-    })
+const app = express();
 
-    console.log(`Server is running at ${url}`);
-};
+async function startGraphQLServer(app) {
+  const server = new ApolloServer({
+    typeDefs,
+    resolvers,
+  });
 
-module.exports = startServer;
+  await server.start();
 
+  app.use('/graphql', express.json(), expressMiddleware(server)); // only one required middleware
 
+  
+}
+
+module.exports=startGraphQLServer;

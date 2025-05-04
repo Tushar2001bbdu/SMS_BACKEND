@@ -4,7 +4,7 @@ const Details = require("../models/feespaymentdetails");
 const Router = express.Router();
 const { message } = require("../models/chatMessages");
 const { body, validationResult } = require("express-validator");
-const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount ,deleteStudentAccount,deleteTeacherAccount} = require("../controllers/management-controllers");
+const { login, getClassList, getStudentList, createStudentAccount, getTeacherList, getPhotoUploadUrl, createTeacherAccount ,deleteStudentAccount,deleteTeacherAccount,getClassGroupMessages} = require("../controllers/management-controllers");
 const { authenticateAdminToken } = require("../middlewares/auth");
 
 const Class = require("../models/classes");
@@ -249,4 +249,5 @@ Router.get("/messages/:senderId/:receiverId", async (req, res) => {
 
   res.json(messages);
 });
+Router.get("/groupMessages/:groupId", getClassGroupMessages);
 module.exports = Router;
