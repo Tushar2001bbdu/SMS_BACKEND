@@ -2,7 +2,7 @@ const express = require("express");
 
 const Router = express.Router();
 
-// Load environment variables from .env file
+
 require("dotenv").config();
 
 const admin = require("firebase-admin");
@@ -45,7 +45,7 @@ Router.put(
           res.status(200).send("The password reset link is" + link);
         } catch (error) {
           res.status(500).send("There has been some error during the process");
-          // Error occurred. Inspect error.code.
+      
         }
       }
     } catch (error) {

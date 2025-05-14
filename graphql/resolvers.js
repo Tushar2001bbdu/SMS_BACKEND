@@ -40,10 +40,10 @@ const resolvers = {
                 let section = classCode
                 let classData = await Class.findOne({ code: classCode })
                 classData?.students.forEach(async (student) => {
-                    let stu = await Student.findById(student)
+                    let stu = await Student.findOne({rollno:student})
                     let rollno = stu.rollno
                     let newAssignment = new model({
-                        rollno, section, title, AssignmentLink, subject, SolutionLink, assignmentDate, dueDate, marks, postedBy, submitted
+                        rollno:rollno, section:section, title:title, assignmentLink:AssignmentLink, subject:subject, solutionLink:SolutionLink, assignmentDate:assignmentDate, dueDate:dueDate, marks:marks, postedBy:postedBy, submitted:submitted
                     })
                     await newAssignment.save();
                 })

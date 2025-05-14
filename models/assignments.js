@@ -16,12 +16,12 @@ const schema = new Schema({
     type: String,
     required: true,
   },
-  AssignmentLink:{
+  assignmentLink:{
     type: String,
     required: true,
     validate: {
       validator: function (v) {
-        const regex = /^https:\/\/student-assignment-questions\.s3\.ap-south-1\.amazonaws\.com/;
+        const regex = /^https:\/\/assignmentsquestions\.s3\.ap-south-1\.amazonaws\.com/;
         return regex.test(v);
     },
     message: props => `${props.value} is not a valid file URL! It must start with "https://student-assignment-questions.s3.ap-south-1.amazonaws.com/A".`,
@@ -32,7 +32,7 @@ const schema = new Schema({
     required: true,
 
   },
-  SolutionLink:{
+  solutionLink:{
     type: String,
     validate: {
       validator: v => /^https:\/\/[^\s]+$/.test(v),

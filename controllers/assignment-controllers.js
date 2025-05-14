@@ -1,7 +1,7 @@
-const { PDFDocument } = require("pdf-lib");
-const { rekognitionClient } = require("../config/rekognitionClient");
-const { s3Client } = require("../config/s3Client");
+const { s3Client } = require("../config/s32");
 const { GetObjectCommand } = require("@aws-sdk/client-s3");
+const { rekognitionClient } = require("../config/RC2");
+const pdfParse = require("pdf-parse");
 const OpenAIApi = require("openai");
 const { updateStudentResult } = require("../services/teachers");
 
@@ -16,8 +16,9 @@ const streamToBuffer = async (stream) => {
 
 async function markAssignment(req, res) {
     try {
-        let rollno=req.params.rollno;
-        const { s3Link, fileType,subject } = req.body;
+        const rollno = req.params.rollno;
+        const { s3Link, fileType, subject } = req.body;
+
         if (!s3Link || !fileType) {
             throw new Error("s3Link and fileType are required.");
         }
@@ -41,9 +42,8 @@ async function markAssignment(req, res) {
                 break;
 
             case "application/pdf":
-                const pdfDoc = await PDFDocument.load(fileBuffer);
-                const pdfText = await extractTextFromPDF(pdfDoc);
-                content = pdfText;
+                const parsedPdf = await pdfParse(fileBuffer);
+                content = parsedPdf.text;
                 break;
 
             case "image/jpeg":
@@ -65,47 +65,44 @@ async function markAssignment(req, res) {
                 throw new Error("Unsupported file type.");
         }
 
-        const analysis = await analyzeContent(content,subject,rollno);
-        res.json({ status: 200, analysis:analysis });
+        const analysis = await analyzeContent(content, subject, rollno);
+        res.json({ status: 200, analysis: analysis });
+
     } catch (error) {
+        console.error("Error in markAssignment:", error);
         res.json({ status: 500, message: error.message });
     }
 }
 
-async function extractTextFromPDF(pdfDoc) {
-    const pages = pdfDoc.getPages();
-    const allText = pages.map((page) => page.getTextContent()).join(" ");
-    return allText;
-}
+const analyzeContent = async (content, subject, rollno) => {
+    try {
+        const openai = new OpenAIApi({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
 
-const analyzeContent = async (content,subject,rollno) => {
+        const response = await openai.chat.completions.create({
+            model: "gpt-4o-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: `You are a grader evaluating assignments based on the subject - ${subject}. Only return a number out of 20. If the content doesn't match the subject, return 0. No explanation.`,
+                },
+                {
+                    role: "user",
+                    content: `Please grade the following assignment:\n\n${content}`,
+                },
+            ],
+        });
 
-try{
-    const openai = new OpenAIApi({
-        key: process.env.OPENAI_API_KEY
-    });
+        const marks = parseInt(response.choices[0].message.content);
+        await updateStudentResult(marks, rollno);
+        console.log("The marks are"+marks)
+        return marks;
 
-    const response = await openai.chat.completions.create({
-        model: "gpt-4o-mini",
-        messages: [
-            {
-                role: "system",
-                content:
-                    `You are a grader evaluating assignments based on the subject - ${subject} you identify the content belongs display only your given score as a number out of 20 (nothing else) and if content is not of the ${subject} give 0 marks do not explain your result`,
-            },
-            {
-                role: "user",
-                content: `Please grade the following assignment:\n\n${content}`,
-            },
-        ],
-    });
-    let marks=parseInt(response.choices[0].message.content);
-    await updateStudentResult(marks,rollno)
-}
-catch(error){
-    res.json({ status: 500, message: error.message });
-}
-    
+    } catch (error) {
+        console.error("Error in analyzeContent:", error);
+        throw new Error("Failed to analyze assignment content.");
+    }
 };
 
-module.exports = { markAssignment};
+module.exports = { markAssignment };

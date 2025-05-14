@@ -1,8 +1,36 @@
 const students = require("../models/examresult");
 const teachers = require("../models/teachers");
-const { s3Client } = require("../config/s3Client");
-const { rekognitionClient } = require("../config/rekognitionClient");
-const { dynamoDBClient } = require("../config/dynamoDBClient");
+const { S3Client } = require("@aws-sdk/client-s3");
+const { RekognitionClient } = require("@aws-sdk/client-rekognition");
+const { DynamoDBClient } = require("@aws-sdk/client-dynamodb");
+ 
+
+const s3Client = new S3Client({
+  region: process.env.REGION,
+  maxRetries: 5,
+  timeOut:3000000,
+  credentials: {
+    accessKeyId: process.env.AC2,
+    secretAccessKey: process.env.K2,
+  },
+});
+
+const rekognitionClient = new RekognitionClient({
+  region: process.env.REGION,
+  credentials: {
+    accessKeyId: process.env.AC2,
+    secretAccessKey: process.env.K2,
+  },
+});
+
+
+const dynamoDBClient = new DynamoDBClient({
+  region: process.env.REGION,
+  credentials: {
+    accessKeyId: process.env.AC2,
+    secretAccessKey: process.env.K2,
+  },
+});
 const { QueryCommand } = require("@aws-sdk/client-dynamodb");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { SearchFacesByImageCommand } = require("@aws-sdk/client-rekognition");
@@ -12,9 +40,8 @@ class attendance {
     const base64Data = url.replace(/^data:image\/\w+;base64,/, "");
     const buffer = Buffer.from(base64Data, "base64");
     const key = `webcams/${Date.now()}/${rollno}.jpg`;
-
     const testing_params = {
-      Bucket: "school-management-testing",
+      Bucket: "schooltestingmanagement",
       Key: key,
       Body: buffer,
       ContentType: "image/jpeg",
@@ -28,7 +55,7 @@ class attendance {
         CollectionId: "smsusers",
         Image: {
           S3Object: {
-            Bucket: "school-management-testing",
+            Bucket: "schooltestingmanagement",
             Name: key,
           },
         },
@@ -39,7 +66,7 @@ class attendance {
       const response = await rekognitionClient.send(faceMatches);
       if (!response.FaceMatches || response.FaceMatches.length === 0) {
         const training_params = {
-          Bucket: "school-managemengt-system-training",
+          Bucket: "schooltrainingmanagement",
           Key: key,
           Body: buffer,
           ContentType: "image/jpeg",
@@ -51,7 +78,7 @@ class attendance {
         await this.queryDynamoDB(matchedFaceId);
         
         const training_params = {
-          Bucket: "school-managemengt-system-training",
+          Bucket: "schooltrainingmanagement",
           Key: key,
           Body: buffer,
           ContentType: "image/jpeg",
@@ -74,7 +101,7 @@ class attendance {
         },
       };
       const data = await dynamoDBClient.send(new QueryCommand(params));
-
+      console.log(data)
       if (data.Items && data.Items.length > 0) {
         let rollno = data.Items[0].RollNo.S;
         await this.setAttendance(rollno);
@@ -82,32 +109,32 @@ class attendance {
         console.error('No matching RekognitionId found in DynamoDB');
       }
     } catch (error) {
-      console.error(error);
+      console.log(error);
     }
   }
 
   static async updateUserAttendance(user) {
-    const time = Date.now();
-    let currentDate = new Date(time).toISOString().split("T")[0];
-    let updatedDate = new Date(user.attendance.updatedAt)
-      .toISOString()
-      .split("T")[0];
-    updatedDate = updatedDate.substring(8, 10);
+  try {
+    const today = new Date().toISOString().split("T")[0];
+    const lastUpdated = new Date(user.attendance.updatedAt).toISOString().split("T")[0];
 
-    if (updatedDate !== currentDate) {
+    if (today !== lastUpdated) {
       let attendance = user.attendance.value + 1;
-      console.log('Updated Attendance:', attendance);
+     
       user.attendance.value = attendance;
-      user.attendance.updatedAt = currentDate;
+      user.attendance.updatedAt = new Date();
       await user.save();
     }
+  } catch (error) {
+    throw error;
   }
-
+}
   static async setAttendance(rollno) {
     try {
       let validStudent = await students.findOne({ rollno: rollno });
+      console.log(validStudent)
       let validTeacher = await teachers.findOne({ rollno: rollno });
-
+      console.log(validTeacher)
       if (validStudent) {
         await this.updateUserAttendance(validStudent);
       }

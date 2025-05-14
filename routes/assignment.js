@@ -1,5 +1,5 @@
 const router = require("express").Router();
-const { s3Client } = require("../config/s3Client");
+const { s3Client } = require("../config/s32");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { markAssignment } = require("../controllers/assignment-controllers");
@@ -22,12 +22,13 @@ router.get("/get-upload-url/:filename/:bucketName", async (req, res) => {
         const url = await generatePresignedUrl(bucketName, filename);
         res.status(200).json({ status: 200, uploadUrl: url });
     } catch (error) {
-        
+         console.error("Error generating presigned URL:", error);
+       
         res
             .status(500)
             .json({ status: 500, error: "Failed to generate presigned URL" });
     }
 });
-router.post("/markAssignment/:rollno",authenticateStudentToken, markAssignment)
+router.post("/markAssignment/:rollno",markAssignment)
 
 module.exports = router;
