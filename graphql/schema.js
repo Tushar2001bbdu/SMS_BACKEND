@@ -2,8 +2,8 @@ const typeDefs = `#graphql
 type Assignment {
     rollno: ID!
     title: String!
-    SolutionLink:String!
-    AssignmentLink:String!
+    solutionLink:String!
+    assignmentLink:String!
     subject: String!
     section: String!
     assignmentDate: String!
@@ -18,7 +18,7 @@ type result{
 input Assignments {
     classCode: ID!
     title: String!
-    AssignmentLink:String!
+    assignmentLink:String!
     subject: String!
     assignmentDate: String!
     dueDate: String!

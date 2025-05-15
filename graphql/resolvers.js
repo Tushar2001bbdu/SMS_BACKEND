@@ -34,19 +34,46 @@ const resolvers = {
     Mutation: {
         async addAssignment(_, { input }) {
             try {
-                const { classCode, title, AssignmentLink, subject, assignmentDate, dueDate, marks, postedBy } = input
+                const { classCode, title, assignmentLink, subject, assignmentDate, dueDate, marks, postedBy } = input
                 let submitted = false;
                 let SolutionLink = "https://www.google.co.in/"
                 let section = classCode
                 let classData = await Class.findOne({ code: classCode })
-                classData?.students.forEach(async (student) => {
-                    let stu = await Student.findOne({rollno:student})
-                    let rollno = stu.rollno
-                    let newAssignment = new model({
-                        rollno:rollno, section:section, title:title, assignmentLink:AssignmentLink, subject:subject, solutionLink:SolutionLink, assignmentDate:assignmentDate, dueDate:dueDate, marks:marks, postedBy:postedBy, submitted:submitted
-                    })
-                    await newAssignment.save();
-                })
+                let newAssignmen = new model({
+        rollno:"121078899",
+        section,
+        title,
+        assignmentLink,
+        subject,
+        SolutionLink,
+        assignmentDate,
+        dueDate,
+        marks,
+        postedBy,
+        submitted
+    });
+    console.log(newAssignmen);
+    await newAssignmen.save();
+               for (const student of classData?.students || []) {
+    const stu = await Student.findOne({ rollno: student });
+    if (!stu) continue;
+
+    const newAssignment = new model({
+        rollno: stu.rollno,
+        section,
+        title,
+        assignmentLink,
+        subject,
+        solutionLink: SolutionLink,
+        assignmentDate,
+        dueDate,
+        marks,
+        postedBy,
+        submitted
+    });
+    console.log(newAssignment);
+    await newAssignment.save();
+}
 
                 let result = {
                     response: "Your assignment has been added"
@@ -57,6 +84,7 @@ const resolvers = {
                 let result = {
                     response: error
                 }
+                cosnole.log(error)
                 return result;
             }
 
@@ -93,7 +121,7 @@ const resolvers = {
           
         async submitAssignment(_, args) {
             const { rollno, title, solutionLink } = args
-            return await model.findOneAndUpdate({ rollno: rollno, title: title }, { $set: { SolutionLink: solutionLink, submitted: true } })
+            return await model.findOneAndUpdate({ rollno: rollno, title: title }, { $set: { solutionLink: solutionLink, submitted: true } })
         }
     }
 }

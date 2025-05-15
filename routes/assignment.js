@@ -5,14 +5,30 @@ const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
 const { markAssignment } = require("../controllers/assignment-controllers");
 const { authenticateStudentToken } = require("../middlewares/auth");
 const generatePresignedUrl = async (bucketName, key) => {
+    const contentTypeMap = {
+        'txt': 'text/plain',
+        'pdf': 'application/pdf',
+        'jpeg': 'image/jpeg',
+        'jpg': 'image/jpeg',
+        'png': 'image/png',
+        'xlsx': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+    };
+
+   
+    const extension = key.split('.').pop().toLowerCase();
+    const contentType = contentTypeMap[extension] || 'application/octet-stream'; 
+
     const command = new PutObjectCommand({
         Bucket: bucketName,
         Key: key,
-        ContentType: "application/txt",
+        ContentType: contentType,
+        
     });
+
     const signedUrl = await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     return signedUrl;
 };
+
 
 router.get("/get-upload-url/:filename/:bucketName", async (req, res) => {
     try {

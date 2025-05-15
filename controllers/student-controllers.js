@@ -5,7 +5,7 @@ let rollno;
 exports.login = async (req, res) => {
   try {
    
-    rollno=req.body.userDetails.rollNo;
+    rollno=req.body.userDetails.rollno;
     console.log("the roll number is",rollno)
     if(studentCheck(req.body.userDetails.email,rollno)){
       res.json({
