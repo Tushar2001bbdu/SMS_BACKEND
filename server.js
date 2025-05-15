@@ -35,6 +35,6 @@ initializeWebSocket(mainServer);
 
 
 // Start Server
-mainServer.listen(port, () => {
+mainServer.listen(port,'0.0.0.0', () => {
   console.log(`✅ Server running at http://localhost:${port}`);
 });
