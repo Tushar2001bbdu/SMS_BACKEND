@@ -2,7 +2,8 @@ const router = require("express").Router();
 const { s3Client } = require("../config/s32");
 const { PutObjectCommand } = require("@aws-sdk/client-s3");
 const { getSignedUrl } = require("@aws-sdk/s3-request-presigner");
-const { markAssignment } = require("../controllers/assignment-controllers");
+const { markAssignment,giveAnswers } = require("../controllers/assignment-controllers");
+
 const { authenticateStudentToken } = require("../middlewares/auth");
 const generatePresignedUrl = async (bucketName, key) => {
     const contentTypeMap = {
@@ -46,5 +47,7 @@ router.get("/get-upload-url/:filename/:bucketName", async (req, res) => {
     }
 });
 router.post("/markAssignment/:rollno",markAssignment)
+router.post("/answerChat",giveAnswers)
+
 
 module.exports = router;

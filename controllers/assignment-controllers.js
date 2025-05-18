@@ -4,7 +4,9 @@ const { rekognitionClient } = require("../config/RC2");
 const pdfParse = require("pdf-parse");
 const OpenAIApi = require("openai");
 const { updateStudentResult } = require("../services/teachers");
-
+  const openai = new OpenAIApi({
+            apiKey: process.env.OPENAI_API_KEY,
+        });
 const streamToBuffer = async (stream) => {
     return new Promise((resolve, reject) => {
         const chunks = [];
@@ -26,7 +28,7 @@ async function markAssignment(req, res) {
         const fileName = decodeURIComponent(s3Link.split("/").pop());
 
         const params = {
-            Bucket: "assignmentsolutions",
+            Bucket: "assignmentssolutions",
             Key: fileName,
         };
 
@@ -76,9 +78,7 @@ async function markAssignment(req, res) {
 
 const analyzeContent = async (content, subject, rollno) => {
     try {
-        const openai = new OpenAIApi({
-            apiKey: process.env.OPENAI_API_KEY,
-        });
+      
 
         const response = await openai.chat.completions.create({
             model: "gpt-4o-mini",
@@ -104,5 +104,21 @@ const analyzeContent = async (content, subject, rollno) => {
         throw new Error("Failed to analyze assignment content.");
     }
 };
+async function giveAnswers(req,res){
+    const { messages } = req.body;
 
-module.exports = { markAssignment };
+  try {
+    const completion = await openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: messages,
+    });
+    
+    res.json({ reply: completion.choices[0].message });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Something went wrong with OpenAI API' });
+  }
+}
+
+
+module.exports = { markAssignment,giveAnswers };
