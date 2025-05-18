@@ -1,12 +1,12 @@
 const SOCKETIO = require("socket.io");
 const { message } = require("../models/chatMessages");
 const { groupMessages } = require("../models/groupMessages");
-const { encryptMessage } = require("../utils/chatsecurity.js");
+const { encryptMessage } = require("../utils/chatSecurity.js");
 
 function initializeWebSocket(server) {
   const io = SOCKETIO(server, {
     cors: {
-      origin: "http://localhost:3000",
+      origin: ["http://localhost:3000","https://sms-frontend-l4czhtxvv-tushar2001bbdus-projects.vercel.app/"],
       methods: ["GET", "POST"],
       credentials: true,
     },
